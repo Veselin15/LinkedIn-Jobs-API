@@ -36,8 +36,12 @@ ROBOTSTXT_OBEY = True
 
 # Concurrency and throttling settings
 #CONCURRENT_REQUESTS = 16
+# Disguise as Chrome on Windows
+USER_AGENT = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+
+# Be polite but persistent
+DOWNLOAD_DELAY = 2  # Wait 2 seconds between requests to avoid bans
 CONCURRENT_REQUESTS_PER_DOMAIN = 1
-DOWNLOAD_DELAY = 1
 
 # Disable cookies (enabled by default)
 #COOKIES_ENABLED = False
