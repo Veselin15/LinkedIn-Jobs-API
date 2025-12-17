@@ -71,9 +71,9 @@ DOWNLOAD_DELAY = 1
 
 # Configure item pipelines
 # See https://docs.scrapy.org/en/latest/topics/item-pipeline.html
-#ITEM_PIPELINES = {
-#    "scraper_service.pipelines.ScraperServicePipeline": 300,
-#}
+ITEM_PIPELINES = {
+   "scraper_service.pipelines.ScraperServicePipeline": 300,
+}
 
 # Enable and configure the AutoThrottle extension (disabled by default)
 # See https://docs.scrapy.org/en/latest/topics/autothrottle.html
