@@ -13,7 +13,7 @@ class JobListAPI(generics.ListAPIView):
     filter_backends = [DjangoFilterBackend, filters.SearchFilter]
 
     # 2. Define what fields can be filtered exactly (e.g., ?company=Google)
-    filterset_fields = ['company', 'source', 'location']
+    filterset_fields = ['company', 'source', 'location', 'salary_min']
 
     # 3. Define what fields can be searched textually (e.g., ?search=machine learning)
-    search_fields = ['title', 'company', 'location']
+    search_fields = ['title', 'company', 'location', 'salary_min']
