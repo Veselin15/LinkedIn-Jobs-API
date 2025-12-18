@@ -1,0 +1,58 @@
+version: '3.8'
+
+services:
+  # 1. The Database (PostgreSQL)
+  db:
+    image: postgres:15
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_DB=remotejobs
+      - POSTGRES_USER=user
+      - POSTGRES_PASSWORD=password
+
+  # 2. The Message Broker (Redis)
+  redis:
+    image: redis:7
+
+  # 3. The API (Django)
+  web:
+    build: .
+    command: python manage.py runserver 0.0.0.0:8000
+    volumes:
+      - .:/app
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+      - redis
+    environment:
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - DATABASE_URL=postgres://user:password@db:5432/remotejobs
+
+  # 4. The Worker (Executes the scraping tasks)
+  celery:
+    build: .
+    command: celery -A config worker --loglevel=info
+    volumes:
+      - .:/app
+    depends_on:
+      - db
+      - redis
+    environment:
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - DATABASE_URL=postgres://user:password@db:5432/remotejobs
+
+  # 5. The Scheduler (Triggers the scraper every X hours)
+  celery-beat:
+    build: .
+    command: celery -A config beat --loglevel=info
+    volumes:
+      - .:/app
+    depends_on:
+      - redis
+    environment:
+      - CELERY_BROKER_URL=redis://redis:6379/0
+
+volumes:
+  postgres_data:

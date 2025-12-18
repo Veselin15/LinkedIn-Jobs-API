@@ -1,0 +1,9 @@
+Django>=5.0
+djangorestframework
+django-filter
+scrapy
+psycopg2-binary
+celery
+redis
+django-celery-beat
+asgiref
