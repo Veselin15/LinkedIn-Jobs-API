@@ -12,29 +12,33 @@ def parse_salary(text):
     elif '£' in text or 'GBP' in text:
         currency = "GBP"
 
-    # 2. Extract Numbers using Regex
-    # Looks for patterns like "60k", "60,000", "60.000"
-    matches = re.findall(r'(\d+[,\.]?\d*)\s*([kK])?', text)
+    # 2. Strategy A: Look for explicit "k" pattern (e.g. 80k, 80-100k)
+    # This finds "80" and "100k"
+    matches_k = re.findall(r'(\d+[,\.]?\d*)\s*[-–to]*\s*(\d+[,\.]?\d*)\s*([kK])', text)
 
     clean_numbers = []
-    for num_str, suffix in matches:
-        # Remove commas/dots to get raw integer
-        clean_num = float(num_str.replace(',', '').replace('.', ''))
 
-        # Handle 'k' (e.g., 60k -> 60000)
-        if suffix and suffix.lower() == 'k':
-            clean_num *= 1000
+    if matches_k:
+        # If we found a range like "80-100k", assume both are thousands
+        for m in matches_k:
+            num1 = float(m[0].replace(',', '').replace('.', ''))
+            num2 = float(m[1].replace(',', '').replace('.', ''))
+            clean_numbers.append(int(num1 * 1000))
+            clean_numbers.append(int(num2 * 1000))
 
-        # Filter out tiny numbers (years, ids) and huge fake numbers
-        if 10000 < clean_num < 500000:
-            clean_numbers.append(int(clean_num))
+    # 2. Strategy B: Look for full numbers (e.g. 60,000)
+    if not clean_numbers:
+        matches_full = re.findall(r'(\d{2,3}[,\.]\d{3})', text)
+        for num_str in matches_full:
+            val = float(num_str.replace(',', '').replace('.', ''))
+            # Sanity check: salaries usually between 10k and 500k
+            if 10000 < val < 500000:
+                clean_numbers.append(int(val))
 
-    # 3. Determine Min/Max
     if not clean_numbers:
         return None, None, None
 
     salary_min = min(clean_numbers)
-    # If there is only one number (e.g. "100k"), max is the same as min
-    salary_max = max(clean_numbers) if len(clean_numbers) > 1 else salary_min
+    salary_max = max(clean_numbers)
 
     return salary_min, salary_max, currency
