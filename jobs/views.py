@@ -8,12 +8,8 @@ from .serializers import JobSerializer
 class JobListAPI(generics.ListAPIView):
     queryset = Job.objects.all().order_by('-posted_at')
     serializer_class = JobSerializer
-
-    # 1. Activate the tools
     filter_backends = [DjangoFilterBackend, filters.SearchFilter]
 
-    # 2. Define what fields can be filtered exactly (e.g., ?company=Google)
+    # Add salary_min and currency here
     filterset_fields = ['company', 'source', 'location', 'currency', 'salary_min']
-
-    # 3. Define what fields can be searched textually (e.g., ?search=machine learning)
-    search_fields = ['title', 'company', 'location', 'salary_min']
+    search_fields = ['title', 'company', 'location']
