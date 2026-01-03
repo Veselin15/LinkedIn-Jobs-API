@@ -137,15 +137,25 @@ CELERY_ACCEPT_CONTENT = ['json']
 CELERY_TASK_SERIALIZER = 'json'
 
 REST_FRAMEWORK = {
-    'DEFAULT_PERMISSION_CLASSES': [
-        'rest_framework_api_key.permissions.HasAPIKey',
+    # 1. Authentication: Tells Django HOW to read the key if sent.
+    # If a key is found, they become "Authenticated". If not, they are "Anonymous".
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework_api_key.authentication.APIKeyAuthentication',
     ],
+
+    # 2. Permissions: "AllowAny" lets unauthenticated users in (Free Tier).
+    # We removed "HasAPIKey", so the door is now open for everyone.
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.AllowAny',
+    ],
+
+    # 3. Throttling: The limits you asked for.
     'DEFAULT_THROTTLE_CLASSES': [
         'rest_framework.throttling.AnonRateThrottle',
         'rest_framework.throttling.UserRateThrottle'
     ],
     'DEFAULT_THROTTLE_RATES': {
-        'anon': '100/day',  # Unauthenticated users (if you allowed them)
-        'user': '1000/day' # API Key holders
+        'anon': '100/day',   # No Key? Tracks IP address. Limit: 100.
+        'user': '1000/day'   # Valid Key? Tracks API Key. Limit: 1000.
     }
 }
