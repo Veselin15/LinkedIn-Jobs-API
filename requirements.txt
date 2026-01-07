@@ -8,3 +8,4 @@ redis
 django-celery-beat
 asgiref
 djangorestframework-api-key
+drf-spectacular
