@@ -1,14 +1,5 @@
 import re
-
-# 1. Define the Skills List
-TECH_KEYWORDS = [
-    "Python", "Django", "Flask", "FastAPI", "React", "Angular", "Vue", "Node.js",
-    "JavaScript", "TypeScript", "HTML", "CSS", "SQL", "PostgreSQL", "MySQL",
-    "Redis", "MongoDB", "Docker", "Kubernetes", "AWS", "Azure", "GCP", "Linux",
-    "Git", "CI/CD", "Machine Learning", "AI", "Data Science", "Pandas", "NumPy",
-    "Scikit-learn", "TensorFlow", "PyTorch", "Celery", "RabbitMQ", "GraphQL",
-    "REST API", "DevOps", "Terraform", "Ansible", "C++", "Java", "Go", "Rust", "Ruby"
-]
+from .constants import TECH_KEYWORDS, NEGATION_PATTERNS, SENIORITY_MAP  # <--- Import from new file
 
 
 def extract_skills(text):
@@ -27,7 +18,7 @@ def extract_skills(text):
         pattern = r'\b' + skill_esc + r'\b'
 
         # C++ and C# handling
-        if skill in ["C++", "C#"]:
+        if skill in ["C++", "C#", ".NET"]:
             pattern = re.escape(skill.lower())
 
         # Find all occurrences of the skill
@@ -35,7 +26,6 @@ def extract_skills(text):
             start, end = match.span()
 
             # Context Window: 50 chars before and 50 chars after
-            # This lets us see "no experience with Java"
             context_start = max(0, start - 50)
             context_end = min(len(text_lower), end + 50)
             context_window = text_lower[context_start:context_end]
@@ -49,7 +39,7 @@ def extract_skills(text):
 
             if not is_negative:
                 found_skills.add(skill)
-                # Once found valid, move to next skill (no need to check other matches of same skill)
+                # Once found valid, move to next skill
                 break
 
     return list(found_skills)
@@ -76,6 +66,8 @@ def extract_seniority(title, description):
 
     # Default
     return "Not Specified"
+
+
 def parse_salary(text):
     if not text:
         return None, None, None
@@ -86,25 +78,51 @@ def parse_salary(text):
         currency = "EUR"
     elif '£' in text or 'GBP' in text:
         currency = "GBP"
+    elif 'BGN' in text or 'lv' in text:
+        currency = "BGN"  # Added support for local currency if needed
 
-    # Strategy A: Ranges (80-100k)
-    matches_k_range = re.search(r'(\d+)\s*[-–to]\s*(\d+)\s*[kK]', text)
+    text_lower = text.lower()
     clean_numbers = []
 
-    if matches_k_range:
-        n1 = int(matches_k_range.group(1))
-        n2 = int(matches_k_range.group(2))
-        clean_numbers = [n1 * 1000, n2 * 1000]
-    else:
-        # Strategy B: Individual numbers (60k, 60,000)
-        matches = re.findall(r'(\d+[,\.]?\d*)\s*([kK])?', text)
-        for num_str, suffix in matches:
+    # Helper function to check if a match is "safe" (not followed by 'people', etc.)
+    def is_safe_match(match_obj):
+        end_pos = match_obj.end()
+        # Look at the next 20 characters
+        suffix = text_lower[end_pos:end_pos + 20]
+
+        for ignore_term in SALARY_IGNORE_TERMS:
+            # Check if the ignore term appears immediately after the number
+            if re.match(r'\s*' + ignore_term, suffix):
+                return False
+        return True
+
+    # Strategy A: Ranges (80-100k)
+    # matches like "80-100k" or "80k - 100k"
+    matches_k_range = re.finditer(r'(\d+)\s*[-–to]\s*(\d+)\s*[kK]', text_lower)
+    for m in matches_k_range:
+        if is_safe_match(m):
+            n1 = int(m.group(1))
+            n2 = int(m.group(2))
+            clean_numbers.extend([n1 * 1000, n2 * 1000])
+
+    # Strategy B: Individual numbers (60k, 60,000)
+    # Only run if Strategy A found nothing (to avoid double counting)
+    if not clean_numbers:
+        matches = re.finditer(r'(\d+[,\.]?\d*)\s*([kK])?', text_lower)
+        for m in matches:
+            if not is_safe_match(m):
+                continue
+
+            num_str = m.group(1)
+            suffix = m.group(2)
+
             clean_str = num_str.replace(',', '').replace('.', '')
             if not clean_str.isdigit(): continue
+
             val = float(clean_str)
             if suffix and suffix.lower() == 'k': val *= 1000
-            if 15000 < val < 500000:  # Sanity check
-                clean_numbers.append(int(val))
+
+            clean_numbers.append(val)
 
     if not clean_numbers:
         return None, None, None

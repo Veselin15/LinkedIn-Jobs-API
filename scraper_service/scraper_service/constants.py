@@ -68,3 +68,12 @@ SENIORITY_MAP = {
         r"mid-level", r"mid level", r"intermediate", r"medior"
     ]
 }
+
+# 4. Salary Ignore Terms (If a number is followed by these, it's NOT a salary)
+SALARY_IGNORE_TERMS = [
+    r"people", r"employees", r"staff", r"members", r"users", r"customers",
+    r"clients", r"downloads", r"active users", r"followers", r"subscribers",
+    r"locations", r"countries", r"cities", r"offices", r"branches",
+    r"products", r"services", r"projects", r"applications",
+    r"servers", r"nodes", r"requests", r"lines of code"
+]
