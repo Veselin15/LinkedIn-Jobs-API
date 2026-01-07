@@ -17,14 +17,13 @@ class JobFilter(django_filters.FilterSet):
     # The "Skills" box you wanted!
     # (We search the text inside the JSON list)
     skills = django_filters.CharFilter(field_name='skills', lookup_expr='icontains')
-
+    seniority = django_filters.CharFilter(lookup_expr='icontains')
     # Keep salary filter
     salary_min = django_filters.NumberFilter(field_name='salary_min', lookup_expr='gte')
 
     class Meta:
         model = Job
-        # We explicitly list ONLY what we want. 'currency' is excluded.
-        fields = ['title', 'company', 'location', 'skills', 'salary_min', 'source']
+        fields = ['title', 'company', 'location', 'skills', 'seniority', 'salary_min', 'source']
 
 class JobListAPI(generics.ListAPIView):
     queryset = Job.objects.all().order_by('-posted_at')
