@@ -7,7 +7,7 @@ TECH_KEYWORDS = [
     "Redis", "MongoDB", "Docker", "Kubernetes", "AWS", "Azure", "GCP", "Linux",
     "Git", "CI/CD", "Machine Learning", "AI", "Data Science", "Pandas", "NumPy",
     "Scikit-learn", "TensorFlow", "PyTorch", "Celery", "RabbitMQ", "GraphQL",
-    "REST API", "DevOps", "Terraform", "Ansible", "C++", "Java", "Go", "Rust"
+    "REST API", "DevOps", "Terraform", "Ansible", "C++", "Java", "Go", "Rust", "Ruby"
 ]
 
 

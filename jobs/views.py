@@ -37,17 +37,23 @@ class JobListAPI(generics.ListAPIView):
     def list(self, request, *args, **kwargs):
         response = super().list(request, *args, **kwargs)
 
-        # If the database returns empty results AND the user searched for something
-        if len(response.data['results']) == 0:
-            search_term = request.query_params.get('search')
-            if search_term:
-                # Automatically trigger the robot to go find this for next time
-                print(f"No results for {search_term}. Triggering scraper...")
-                run_scrapers.delay(keyword=search_term, location="Europe")
+        # Handle Pagination (access 'results') vs No Pagination (access list directly)
+        current_results = response.data['results'] if isinstance(response.data, dict) else response.data
 
-                # Tell the user what happened
+        if len(current_results) == 0:
+            # Check for ANY valid search parameter
+            search_term = request.query_params.get('search')
+            skills_term = request.query_params.get('skills')
+
+            # Prefer the explicit search term, otherwise use the skill
+            term_to_scrape = search_term or skills_term
+
+            if term_to_scrape:
+                print(f"No results for '{term_to_scrape}'. Triggering scraper...")
+                run_scrapers.delay(keyword=term_to_scrape, location="Europe")
+
                 return Response({
-                    "message": "No jobs found yet. We have started a live scrape for you. Check back in 2 minutes!",
+                    "message": f"No jobs found for '{term_to_scrape}'. We have started a live scrape for you. Check back in 2 minutes!",
                     "results": []
                 })
 
