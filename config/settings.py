@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/6.0/ref/settings/
 import os
 from pathlib import Path
 from celery import Celery
+from celery.schedules import crontab
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -156,4 +157,16 @@ SPECTACULAR_SETTINGS = {
     'TITLE': 'Remote Jobs API',
     'DESCRIPTION': 'A specialized API for finding remote tech jobs on LinkedIn.',
     'VERSION': '1.0.0',
+}
+CELERY_BEAT_SCHEDULE = {
+    'scrape-linkedin-morning': {
+        'task': 'jobs.tasks.run_scrapers',
+        'schedule': crontab(hour=8, minute=0),  # Runs at 8:00 AM UTC
+        'args': ('Python', 'Europe'),           # Default search
+    },
+    'scrape-linkedin-evening': {
+        'task': 'jobs.tasks.run_scrapers',
+        'schedule': crontab(hour=18, minute=0), # Runs at 6:00 PM UTC
+        'args': ('Python', 'Europe'),
+    },
 }
