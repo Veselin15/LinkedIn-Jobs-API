@@ -162,18 +162,21 @@ SPECTACULAR_SETTINGS = {
     'VERSION': '1.0.0',
 }
 CELERY_BEAT_SCHEDULE = {
-    'scrape-linkedin-morning': {
-        'task': 'jobs.tasks.run_scrapers',
-        'schedule': crontab(hour=8, minute=0),  # Runs at 8:00 AM UTC
-        'args': ('Python', 'Europe'),  # Default search
+    # Run the BIG scraper at 8:00 AM
+    'bulk-scrape-morning': {
+        'task': 'jobs.tasks.run_bulk_scrape',  # <--- Points to the new loop task
+        'schedule': crontab(hour=8, minute=0),
     },
-    'scrape-linkedin-evening': {
-        'task': 'jobs.tasks.run_scrapers',
-        'schedule': crontab(hour=18, minute=0),  # Runs at 6:00 PM UTC
-        'args': ('Python', 'Europe'),
+
+    # Run the BIG scraper at 6:00 PM
+    'bulk-scrape-evening': {
+        'task': 'jobs.tasks.run_bulk_scrape',  # <--- Points to the new loop task
+        'schedule': crontab(hour=18, minute=0),
     },
+
+    # Keep the janitor
     'cleanup-old-jobs-daily': {
         'task': 'jobs.tasks.cleanup_old_jobs',
-        'schedule': crontab(hour=0, minute=0),  # Runs at Midnight (00:00)
+        'schedule': crontab(hour=0, minute=0),
     },
 }
