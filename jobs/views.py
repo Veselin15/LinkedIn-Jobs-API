@@ -1,3 +1,4 @@
+import re
 from rest_framework import generics, filters, serializers
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -17,7 +18,7 @@ class JobFilter(django_filters.FilterSet):
 
     # The "Skills" box you wanted!
     # (We search the text inside the JSON list)
-    skills = django_filters.CharFilter(field_name='skills', lookup_expr='icontains')
+    skills = django_filters.CharFilter(method='filter_skills')
     seniority = django_filters.CharFilter(lookup_expr='icontains')
     # Keep salary filter
     salary_min = django_filters.NumberFilter(field_name='salary_min', lookup_expr='gte')
@@ -26,6 +27,15 @@ class JobFilter(django_filters.FilterSet):
         model = Job
         fields = ['title', 'company', 'location', 'skills', 'seniority', 'salary_min', 'source']
 
+    def filter_skills(self, queryset, name, value):
+        if not value:
+            return queryset
+
+        # We search for the value wrapped in quotes.
+        # In the DB, the list looks like: ["Java", "Python"]
+        # Searching for "Java" (with quotes) matches "Java" but NOT "JavaScript".
+        # iregex makes it case-insensitive but quote-sensitive.
+        return queryset.filter(skills__iregex=f'"{re.escape(value)}"')
 class JobListAPI(generics.ListAPIView):
     queryset = Job.objects.all().order_by('-posted_at')
     serializer_class = JobSerializer

@@ -7,7 +7,7 @@ class FreeTierThrottle(AnonRateThrottle):
     Limits unauthenticated users (by IP) to 100/day.
     If a valid API Key is found, this rule is SKIPPED.
     """
-    rate = '4/day'
+    rate = '100/day'
 
     def allow_request(self, request, view):
         # 1. Check for API Key header
