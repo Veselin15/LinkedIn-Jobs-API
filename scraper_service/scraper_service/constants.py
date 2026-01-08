@@ -45,7 +45,7 @@ NEGATION_PATTERNS = [
     r"don't need",
     r"without experience",
     r"no prior experience",
-    r"is a plus",          # Often means "nice to have" but not strict requirement for the core role
+    r"is a plus",  # Often means "nice to have" but not strict requirement for the core role
     r"would be an asset",
     r"desirable but not",
     r"advantageous",
@@ -76,7 +76,12 @@ SALARY_IGNORE_TERMS = [
     r"locations", r"countries", r"cities", r"offices", r"branches",
     r"products", r"services", r"projects", r"applications",
     r"servers", r"nodes", r"requests", r"lines of code",
-    r"registered users", r"students", r"graduates", r"partners"
+    r"registered users", r"students", r"graduates", r"partners",
+
+    # --- NEW: Time & Metric units to ignore ---
+    r"hours", r"hour", r"hrs", r"days", r"day", r"weeks", r"week",
+    r"months", r"month", r"years", r"year",
+    r"shifts", r"calls", r"tickets", r"items", r"units"
 ]
 
 SALARY_HINTS = [
