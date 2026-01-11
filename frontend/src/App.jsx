@@ -173,6 +173,17 @@ function App() {
                                         <div className="job-company">
                                             <span>🏢 {job.company}</span>
                                             <span>📍 {job.location}</span>
+                                            {/* Add this badge: */}
+                                            <span style={{
+                                                fontSize: '0.8rem',
+                                                padding: '2px 8px',
+                                                borderRadius: '4px',
+                                                background: job.source === 'LinkedIn' ? '#0077b5' : '#e1563f',
+                                                color: 'white',
+                                                marginLeft: '8px'
+                                            }}>
+    {job.source}
+  </span>
                                         </div>
                                     </div>
                                     <span className="job-date">{formatDate(job.posted_at)}</span>
