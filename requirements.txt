@@ -10,5 +10,4 @@ asgiref
 djangorestframework-api-key
 drf-spectacular
 scrapy-user-agents
-django-cors-headers
 stripe
