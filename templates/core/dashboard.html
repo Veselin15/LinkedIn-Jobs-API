@@ -1,0 +1,64 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
+    
+    <div class="md:flex md:items-center md:justify-between mb-8">
+        <div class="flex-1 min-w-0">
+            <h2 class="text-2xl font-bold leading-7 text-gray-900 sm:text-3xl sm:truncate">
+                Hello, {{ user.username }} 👋
+            </h2>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
+        
+        <div class="bg-white overflow-hidden shadow rounded-lg">
+            <div class="px-4 py-5 sm:p-6">
+                <h3 class="text-lg leading-6 font-medium text-gray-900">Your Subscription</h3>
+                <div class="mt-4">
+                    {% if is_premium %}
+                        <span class="inline-flex items-center px-3 py-0.5 rounded-full text-sm font-medium bg-green-100 text-green-800">
+                            💎 Premium Plan Active
+                        </span>
+                        <p class="mt-4 text-sm text-gray-500">
+                            Your API Key Prefix: <code class="bg-gray-100 p-1 rounded">{{ key_prefix }}...</code>
+                        </p>
+                        <p class="text-xs text-gray-400 mt-1">(Check your email for the full key)</p>
+                    {% else %}
+                        <span class="inline-flex items-center px-3 py-0.5 rounded-full text-sm font-medium bg-gray-100 text-gray-800">
+                            Free Tier
+                        </span>
+                        <p class="mt-4 text-gray-600">Limit: 100 requests / day</p>
+                        
+                        <div class="mt-6">
+                            <form action="{% url 'checkout' %}" method="POST">
+                                {% csrf_token %}
+                                <button type="submit" class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700">
+                                    Upgrade to Premium ($29/mo)
+                                </button>
+                            </form>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white overflow-hidden shadow rounded-lg">
+            <div class="px-4 py-5 sm:p-6">
+                <h3 class="text-lg leading-6 font-medium text-gray-900">Quick Start</h3>
+                <div class="mt-4 bg-gray-900 rounded-lg p-4 overflow-x-auto">
+                    <pre class="text-green-400 text-sm">curl -X GET "{{ api_url }}" \
+-H "Authorization: Api-Key YOUR_KEY"</pre>
+                </div>
+                <div class="mt-4">
+                    <a href="/api/docs/" class="text-indigo-600 hover:text-indigo-500 font-medium">
+                        Read Full Documentation &rarr;
+                    </a>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+{% endblock %}

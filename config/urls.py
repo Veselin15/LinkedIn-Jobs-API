@@ -20,6 +20,13 @@ from jobs.views import JobListAPI, ScrapeTriggerAPI
 from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
 urlpatterns = [
     path('admin/', admin.site.urls),
+# 1. The Core App (Home & Dashboard)
+    path('', include('core.urls')),
+    # 2. Authentication (Login/Logout/Password Reset) - FREE from Django!
+    path('accounts/', include('django.contrib.auth.urls')),
+    # 3. Your API
+    path('api/jobs/', include('jobs.urls')), # Assuming you have a jobs/urls.py, or link directly to view
+    path('api/payments/', include('payments.urls')),
     path('api/jobs/', JobListAPI.as_view(), name='job-list'),
 
     # New Endpoint for triggering scrapes
