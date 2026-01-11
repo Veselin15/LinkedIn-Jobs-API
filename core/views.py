@@ -1,8 +1,9 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from rest_framework_api_key.models import APIKey
 from jobs.models import Job
-
+from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth import login as auth_login
 def index(request):
     """The Landing Page (Public)"""
     # Show stats to impress visitors
@@ -37,3 +38,18 @@ def dashboard(request):
         'api_url': 'http://localhost:8000/api/jobs/' # Or your real domain
     }
     return render(request, 'core/dashboard.html', context)
+
+
+def register(request):
+    """Handles User Registration"""
+    if request.method == 'POST':
+        form = UserCreationForm(request.POST)
+        if form.is_valid():
+            user = form.save()
+            # Log the user in immediately after signing up
+            auth_login(request, user)
+            return redirect('dashboard')
+    else:
+        form = UserCreationForm()
+
+    return render(request, 'registration/register.html', {'form': form})
