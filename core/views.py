@@ -7,7 +7,7 @@ from django.contrib.auth import login as auth_login
 from django.core.paginator import Paginator
 from django.db.models import Q
 from django.contrib import messages
-
+from .forms import EmailRequiredSignupForm
 
 def index(request):
     """The Landing Page (Public)"""
@@ -46,16 +46,17 @@ def dashboard(request):
 
 
 def register(request):
-    """Handles User Registration"""
+    """Handles User Registration with Email"""
     if request.method == 'POST':
-        form = UserCreationForm(request.POST)
+        # Use the new form here
+        form = EmailRequiredSignupForm(request.POST)
         if form.is_valid():
             user = form.save()
-            # Log the user in immediately after signing up
             auth_login(request, user)
             return redirect('dashboard')
     else:
-        form = UserCreationForm()
+        # And here
+        form = EmailRequiredSignupForm()
 
     return render(request, 'registration/register.html', {'form': form})
 
