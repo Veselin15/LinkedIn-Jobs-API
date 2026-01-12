@@ -131,3 +131,20 @@ def regenerate_api_key(request):
         return redirect('dashboard')
 
     return redirect('dashboard')
+
+
+@login_required
+def developer_guide(request):
+    """
+    The 'Developer Portal' page.
+    Shows code examples personalized with the user's API Key.
+    """
+    # 1. Get the API Key (if it exists) to pre-fill the code snippets
+    api_key = APIKey.objects.filter(name=request.user.email).first()
+
+    context = {
+        'has_key': bool(api_key),
+        'key_prefix': api_key.prefix if api_key else "YOUR_API_KEY",
+        'api_url': 'http://localhost:8000/api/jobs/',  # Change to real domain in Prod
+    }
+    return render(request, 'core/developer_guide.html', context)
