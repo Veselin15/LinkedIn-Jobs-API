@@ -1,0 +1,67 @@
+<div class="space-y-4" id="job-results-area">
+    {% for job in page_obj %}
+    <div class="bg-white overflow-hidden shadow rounded-lg hover:shadow-md transition-shadow duration-200 border-l-4
+                {% if job.source == 'LinkedIn' %}border-blue-500{% else %}border-orange-500{% endif %}">
+        <div class="px-4 py-5 sm:p-6">
+            <div class="flex justify-between items-start">
+                <div>
+                    <h3 class="text-lg leading-6 font-medium text-gray-900">
+                        <a href="{{ job.url }}" target="_blank" class="hover:underline hover:text-indigo-600">
+                            {{ job.title }}
+                        </a>
+                    </h3>
+                    <p class="mt-1 max-w-2xl text-sm text-gray-500">
+                        🏢 {{ job.company }} &nbsp;•&nbsp; 📍 {{ job.location }}
+                        &nbsp;•&nbsp; <span class="text-xs font-mono bg-gray-100 px-2 py-1 rounded">{{ job.source }}</span>
+                    </p>
+                </div>
+                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                    {{ job.posted_at|date:"M d" }}
+                </span>
+            </div>
+
+            <div class="mt-4">
+                {% for skill in job.skills|slice:":5" %}
+                    <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-indigo-50 text-indigo-800 mr-2">
+                        {{ skill }}
+                    </span>
+                {% endfor %}
+            </div>
+
+            <div class="mt-4 text-sm text-gray-500 line-clamp-2">
+                {{ job.description|striptags|truncatewords:30 }}
+            </div>
+        </div>
+    </div>
+    {% empty %}
+    <div class="text-center py-12 text-gray-500">
+        <p class="text-xl">No jobs found matching your criteria.</p>
+    </div>
+    {% endfor %}
+
+    <div class="py-6 flex justify-center">
+        <div class="flex space-x-2">
+            {% if page_obj.has_previous %}
+                <button
+                    hx-get="{% url 'job_list' %}?page={{ page_obj.previous_page_number }}&q={{ query }}&loc={{ location }}"
+                    hx-target="#job-results-area"
+                    hx-swap="outerHTML"
+                    class="px-4 py-2 border rounded bg-white hover:bg-gray-50">
+                    Previous
+                </button>
+            {% endif %}
+
+            <span class="px-4 py-2 text-gray-600">Page {{ page_obj.number }}</span>
+
+            {% if page_obj.has_next %}
+                <button
+                    hx-get="{% url 'job_list' %}?page={{ page_obj.next_page_number }}&q={{ query }}&loc={{ location }}"
+                    hx-target="#job-results-area"
+                    hx-swap="outerHTML"
+                    class="px-4 py-2 border rounded bg-white hover:bg-gray-50">
+                    Next
+                </button>
+            {% endif %}
+        </div>
+    </div>
+</div>

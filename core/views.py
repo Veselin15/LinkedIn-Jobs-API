@@ -95,6 +95,11 @@ def job_list(request):
         'query': query,
         'location': location
     }
+    # HTMX Detection: If the request comes from HTMX, return ONLY the partial HTML
+    if request.headers.get('HX-Request'):
+        return render(request, 'core/partials/job_results.html', context)
+
+    # Otherwise, return the full page (with navbar/footer)
     return render(request, 'core/job_list.html', context)
 
 
