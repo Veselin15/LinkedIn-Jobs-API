@@ -4,6 +4,10 @@ from rest_framework_api_key.models import APIKey
 from jobs.models import Job
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth import login as auth_login
+from django.core.paginator import Paginator
+from django.db.models import Q
+
+
 def index(request):
     """The Landing Page (Public)"""
     # Show stats to impress visitors
@@ -53,3 +57,38 @@ def register(request):
         form = UserCreationForm()
 
     return render(request, 'registration/register.html', {'form': form})
+
+
+@login_required
+def job_list(request):
+    """
+    The Main Job Board Interface.
+    Replaces the old React App.jsx.
+    """
+    query = request.GET.get('q', '')
+    location = request.GET.get('loc', '')
+
+    # 1. Filter Jobs
+    jobs = Job.objects.all().order_by('-posted_at')
+
+    if query:
+        jobs = jobs.filter(
+            Q(title__icontains=query) |
+            Q(skills__icontains=query) |
+            Q(company__icontains=query)
+        )
+
+    if location:
+        jobs = jobs.filter(location__icontains=location)
+
+    # 2. Pagination (20 jobs per page)
+    paginator = Paginator(jobs, 20)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
+    context = {
+        'page_obj': page_obj,
+        'query': query,
+        'location': location
+    }
+    return render(request, 'core/job_list.html', context)
