@@ -14,6 +14,7 @@ from .throttles import FreeTierThrottle, PremiumTierThrottle # <--- Import your 
 from .models import Job
 from .serializers import JobSerializer
 from .tasks import run_scrapers
+from .throttles import FreeTierThrottle, PremiumTierThrottle
 
 # --- 1. Define the Custom Filter (The Input Boxes) ---
 class JobFilter(django_filters.FilterSet):
