@@ -1,4 +1,5 @@
 <div class="space-y-4" id="job-results-area">
+
     {% for job in page_obj %}
     <div class="bg-white overflow-hidden shadow rounded-lg hover:shadow-md transition-shadow duration-200 border-l-4
                 {% if job.source == 'LinkedIn' %}border-blue-500{% else %}border-orange-500{% endif %}">
@@ -40,26 +41,39 @@
     {% endfor %}
 
     <div class="py-6 flex justify-center">
-        <div class="flex space-x-2">
+        <div class="flex space-x-2 items-center">
+
             {% if page_obj.has_previous %}
                 <button
                     hx-get="{% url 'job_list' %}?page={{ page_obj.previous_page_number }}&q={{ query }}&loc={{ location }}"
                     hx-target="#job-results-area"
                     hx-swap="outerHTML"
-                    class="px-4 py-2 border rounded bg-white hover:bg-gray-50">
-                    Previous
+                    hx-on::after-request="window.scrollTo({top: 0, behavior: 'smooth'})"
+                    class="px-4 py-2 border rounded bg-white hover:bg-gray-50 text-gray-700 font-medium shadow-sm">
+                    &larr; Previous
+                </button>
+            {% else %}
+                <button disabled class="px-4 py-2 border rounded bg-gray-100 text-gray-400 cursor-not-allowed">
+                    &larr; Previous
                 </button>
             {% endif %}
 
-            <span class="px-4 py-2 text-gray-600">Page {{ page_obj.number }}</span>
+            <span class="px-4 py-2 text-gray-600 font-medium">
+                Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+            </span>
 
             {% if page_obj.has_next %}
                 <button
                     hx-get="{% url 'job_list' %}?page={{ page_obj.next_page_number }}&q={{ query }}&loc={{ location }}"
                     hx-target="#job-results-area"
                     hx-swap="outerHTML"
-                    class="px-4 py-2 border rounded bg-white hover:bg-gray-50">
-                    Next
+                    hx-on::after-request="window.scrollTo({top: 0, behavior: 'smooth'})"
+                    class="px-4 py-2 border rounded bg-white hover:bg-gray-50 text-gray-700 font-medium shadow-sm">
+                    Next &rarr;
+                </button>
+            {% else %}
+                <button disabled class="px-4 py-2 border rounded bg-gray-100 text-gray-400 cursor-not-allowed">
+                    Next &rarr;
                 </button>
             {% endif %}
         </div>
