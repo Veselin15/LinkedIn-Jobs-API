@@ -115,3 +115,36 @@ class StripeWebhookView(View):
                 print(f"Error handling cancellation: {e}", file=sys.stderr)
 
         return HttpResponse(status=200)
+
+
+class StripePortalView(LoginRequiredMixin, View):
+    """
+    Redirects the user to the Stripe Self-Service Portal
+    so they can Cancel or Update their payment method.
+    """
+
+    def post(self, request, *args, **kwargs):
+        domain_url = 'http://localhost:8000'  # Update for production
+        try:
+            # 1. Find the Stripe Customer ID using their email
+            # (Since we don't store it in the DB yet, we ask Stripe)
+            customers = stripe.Customer.list(email=request.user.email, limit=1)
+
+            if not customers.data:
+                # If they haven't bought anything yet, they don't have a portal
+                return redirect('dashboard')
+
+            customer_id = customers.data[0].id
+
+            # 2. Create the Portal Session
+            portal_session = stripe.billing_portal.Session.create(
+                customer=customer_id,
+                return_url=domain_url + '/dashboard/',
+            )
+
+            # 3. Redirect them to Stripe
+            return redirect(portal_session.url)
+
+        except Exception as e:
+            print(f"Error creating portal session: {e}")
+            return redirect('dashboard')
