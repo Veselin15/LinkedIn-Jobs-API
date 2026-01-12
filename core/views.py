@@ -23,11 +23,13 @@ def dashboard(request):
     """
     # 1. Check for API Key
     # We name the key after the user's email to link them.
-    try:
-        api_key = APIKey.objects.get(name=request.user.email)
+    # Use .filter().first() instead of .get()
+    api_key = APIKey.objects.filter(name=request.user.email).first()
+
+    if api_key:
         has_key = True
         key_prefix = api_key.prefix
-    except APIKey.DoesNotExist:
+    else:
         has_key = False
         key_prefix = None
 

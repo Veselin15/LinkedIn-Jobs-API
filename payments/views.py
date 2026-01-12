@@ -1,4 +1,5 @@
 import stripe
+import sys
 from django.conf import settings
 from django.http import JsonResponse, HttpResponse
 from django.shortcuts import redirect
@@ -43,44 +44,48 @@ class CreateCheckoutSessionView(View):
 
 @method_decorator(csrf_exempt, name='dispatch')
 class StripeWebhookView(View):
-    """
-    Stripe calls THIS URL when payment succeeds.
-    We generate the API Key here.
-    """
-
     def post(self, request, *args, **kwargs):
         payload = request.body
-        sig_header = request.META['HTTP_STRIPE_SIGNATURE']
+        sig_header = request.META.get('HTTP_STRIPE_SIGNATURE')
         event = None
+
+        print(f"🔔 WEBHOOK RECEIVED! Signature: {sig_header[:10]}...", file=sys.stderr)
 
         try:
             event = stripe.Webhook.construct_event(
                 payload, sig_header, settings.STRIPE_WEBHOOK_SECRET
             )
         except ValueError as e:
-            return HttpResponse(status=400)  # Invalid payload
+            print("❌ Error: Invalid Payload", file=sys.stderr)
+            return HttpResponse(status=400)
         except stripe.error.SignatureVerificationError as e:
-            return HttpResponse(status=400)  # Invalid signature
+            print("❌ Error: Invalid Signature (Check STRIPE_WEBHOOK_SECRET in settings.py)", file=sys.stderr)
+            return HttpResponse(status=400)
 
-        # Handle the checkout.session.completed event
         if event['type'] == 'checkout.session.completed':
             session = event['data']['object']
-
-            # 1. Get User Email
             customer_email = session.get('customer_details', {}).get('email')
 
+            print(f"💰 Payment confirmed for: {customer_email}", file=sys.stderr)
+
             if customer_email:
-                # 2. Generate a Real API Key
+                # CRITICAL FIX: Remove existing keys to prevent duplicates
+                existing_keys = APIKey.objects.filter(name=customer_email)
+                if existing_keys.exists():
+                    print(f"⚠️ Found {existing_keys.count()} old keys. Revoking them...", file=sys.stderr)
+                    existing_keys.delete()
+
+                # Generate New Key
                 api_key, key_string = APIKey.objects.create_key(name=customer_email)
+                print(f"✅ SUCCESS: Generated New Key for {customer_email}", file=sys.stderr)
 
-                print(f"✅ GENERATED KEY FOR {customer_email}: {key_string}")
-
-                # 3. Send Email (Prints to console in Dev)
+                # Send Email
                 send_mail(
                     subject="Your Remote Jobs API Key 🚀",
                     message=f"Thanks for upgrading!\n\nYour API Key is: {key_string}\n\nKeep it safe!",
                     from_email=settings.DEFAULT_FROM_EMAIL,
                     recipient_list=[customer_email],
+                    fail_silently=True,
                 )
 
         return HttpResponse(status=200)
