@@ -63,16 +63,39 @@ def register(request):
     return render(request, 'registration/register.html', {'form': form})
 
 
-@login_required
 def job_list(request):
     """
-    The Main Job Board Interface.
-    Replaces the old React App.jsx.
+    Public Job Board with Metered Access.
+    - Logged In: Unlimited Views
+    - Anonymous: 5 Pages Limit -> Then Upsell
     """
+
+    # --- METERED PAYWALL LOGIC ---
+    if not request.user.is_authenticated:
+        # Get current view count from session (default is 0)
+        anon_views = request.session.get('anon_job_views', 0)
+        limit = 7
+
+        if anon_views >= limit:
+            # LIMIT REACHED: Show Upsell
+
+            # If they clicked "Next" (HTMX), replace the job list with the signup card
+            if request.headers.get('HX-Request'):
+                return render(request, 'core/partials/upsell.html')
+
+            # If they refreshed the page, show the upsell on the main page
+            return render(request, 'core/job_list.html', {
+                'limit_reached': True,
+                'page_obj': None  # No jobs for you!
+            })
+
+        # Increment count
+        request.session['anon_job_views'] = anon_views + 1
+
+    # --- STANDARD JOB FETCHING (Keep your existing code) ---
     query = request.GET.get('q', '')
     location = request.GET.get('loc', '')
 
-    # 1. Filter Jobs
     jobs = Job.objects.all().order_by('-posted_at')
 
     if query:
@@ -85,7 +108,6 @@ def job_list(request):
     if location:
         jobs = jobs.filter(location__icontains=location)
 
-    # 2. Pagination (20 jobs per page)
     paginator = Paginator(jobs, 20)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
@@ -95,11 +117,10 @@ def job_list(request):
         'query': query,
         'location': location
     }
-    # HTMX Detection: If the request comes from HTMX, return ONLY the partial HTML
+
     if request.headers.get('HX-Request'):
         return render(request, 'core/partials/job_results.html', context)
 
-    # Otherwise, return the full page (with navbar/footer)
     return render(request, 'core/job_list.html', context)
 
 

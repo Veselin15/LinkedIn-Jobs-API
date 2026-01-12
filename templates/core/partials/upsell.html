@@ -1,0 +1,23 @@
+<div class="bg-indigo-50 border-l-4 border-indigo-500 p-8 rounded-md shadow-md text-center my-8">
+    <div class="flex justify-center mb-4">
+        <span class="p-3 bg-white rounded-full shadow-sm">
+            <svg class="w-8 h-8 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"></path>
+            </svg>
+        </span>
+    </div>
+    <h3 class="text-2xl font-bold text-gray-900">Start your career journey! 🚀</h3>
+    <p class="mt-2 text-gray-600 text-lg">
+        You've viewed your free sample jobs. <br>
+        Create a <strong>Free Account</strong> to browse unlimited jobs and access our API.
+    </p>
+    <div class="mt-8 flex justify-center gap-4">
+        <a href="{% url 'register' %}" class="px-8 py-3 border border-transparent text-base font-bold rounded-md text-white bg-indigo-600 hover:bg-indigo-700 shadow-lg transform transition hover:-translate-y-1">
+            Sign Up Free
+        </a>
+        <a href="{% url 'login' %}" class="px-8 py-3 border border-gray-300 text-base font-medium rounded-md text-indigo-700 bg-white hover:bg-gray-50">
+            Login
+        </a>
+    </div>
+    <p class="mt-4 text-xs text-gray-500">No credit card required for browsing.</p>
+</div>

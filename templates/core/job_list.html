@@ -27,7 +27,11 @@
         </form>
     </div>
 
-    {% include 'core/partials/job_results.html' %}
+    {% if limit_reached %}
+        {% include 'core/partials/upsell.html' %}
+    {% else %}
+        {% include 'core/partials/job_results.html' %}
+    {% endif %}
 
 </div>
 {% endblock %}
