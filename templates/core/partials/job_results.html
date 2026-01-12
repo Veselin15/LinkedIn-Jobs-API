@@ -47,8 +47,7 @@
                 <button
                     hx-get="{% url 'job_list' %}?page={{ page_obj.previous_page_number }}&q={{ query }}&loc={{ location }}"
                     hx-target="#job-results-area"
-                    hx-swap="outerHTML"
-                    hx-on::after-request="window.scrollTo({top: 0, behavior: 'smooth'})"
+                    hx-swap="outerHTML show:window:top"
                     class="px-4 py-2 border rounded bg-white hover:bg-gray-50 text-gray-700 font-medium shadow-sm">
                     &larr; Previous
                 </button>
@@ -66,8 +65,7 @@
                 <button
                     hx-get="{% url 'job_list' %}?page={{ page_obj.next_page_number }}&q={{ query }}&loc={{ location }}"
                     hx-target="#job-results-area"
-                    hx-swap="outerHTML"
-                    hx-on::after-request="window.scrollTo({top: 0, behavior: 'smooth'})"
+                    hx-swap="outerHTML show:window:top"
                     class="px-4 py-2 border rounded bg-white hover:bg-gray-50 text-gray-700 font-medium shadow-sm">
                     Next &rarr;
                 </button>
