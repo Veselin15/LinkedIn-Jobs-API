@@ -6,6 +6,7 @@ from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth import login as auth_login
 from django.core.paginator import Paginator
 from django.db.models import Q
+from django.contrib import messages
 
 
 def index(request):
@@ -92,3 +93,33 @@ def job_list(request):
         'location': location
     }
     return render(request, 'core/job_list.html', context)
+
+
+@login_required
+def regenerate_api_key(request):
+    """
+    Allows a Premium user to revoke their old key and get a new one.
+    This is the ONLY time they will see the full key on screen.
+    """
+    if request.method == 'POST':
+        # 1. Check if they are actually premium (have an existing key or paid)
+        # For simplicity, we assume if they have a key object, they are allowed.
+        try:
+            old_key = APIKey.objects.get(name=request.user.email)
+            old_key.delete()  # Revoke old access
+        except APIKey.DoesNotExist:
+            # Optional: Check if they paid via Stripe if no key exists
+            # For now, we only let them regenerate if they had one.
+            messages.error(request, "No active subscription found.")
+            return redirect('dashboard')
+
+        # 2. Create New Key
+        api_key, key_string = APIKey.objects.create_key(name=request.user.email)
+
+        # 3. Flash the key to the user (One time only!)
+        messages.success(request, f"Your new API Key is: {key_string}")
+        messages.warning(request, "Please copy this key now. You will not be able to see it again!")
+
+        return redirect('dashboard')
+
+    return redirect('dashboard')
