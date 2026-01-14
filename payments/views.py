@@ -1,6 +1,5 @@
 import stripe
 import sys
-from django.conf import settings
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import redirect
 from django.views import View
@@ -9,7 +8,7 @@ from django.utils.decorators import method_decorator
 from django.core.mail import send_mail
 from django.contrib.auth.mixins import LoginRequiredMixin
 from rest_framework_api_key.models import APIKey
-
+from django.conf import settings
 stripe.api_key = settings.STRIPE_SECRET_KEY
 
 
@@ -19,7 +18,7 @@ class CreateCheckoutSessionView(LoginRequiredMixin, View):
     """
 
     def post(self, request, *args, **kwargs):
-        domain_url = 'http://localhost:8000'  # Update this when you deploy!
+        domain_url = settings.SITE_URL
         try:
             checkout_session = stripe.checkout.Session.create(
                 payment_method_types=['card'],
@@ -124,7 +123,7 @@ class StripePortalView(LoginRequiredMixin, View):
     """
 
     def post(self, request, *args, **kwargs):
-        domain_url = 'http://localhost:8000'  # Update for production
+        domain_url = settings.SITE_URL
         try:
             # 1. Find the Stripe Customer ID using their email
             # (Since we don't store it in the DB yet, we ask Stripe)
