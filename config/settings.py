@@ -72,6 +72,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'core.context_processors.global_premium_status',
             ],
         },
     },
@@ -195,7 +196,6 @@ STRIPE_PRICE_ID = os.environ.get('STRIPE_PRICE_ID', 'price_12345...')
 # This prints emails to the console/logs. Change to 'smtp' for production.
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 DEFAULT_FROM_EMAIL = 'noreply@remotejobsapi.com'
-
 
 LOGIN_REDIRECT_URL = '/dashboard/'
 LOGOUT_REDIRECT_URL = '/'
