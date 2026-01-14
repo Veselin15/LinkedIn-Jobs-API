@@ -1,20 +1,91 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<div class="bg-white">
-    <div class="max-w-7xl mx-auto py-16 px-4 sm:py-24 sm:px-6 lg:px-8 text-center">
-        <h1 class="text-4xl font-extrabold text-gray-900 sm:text-5xl sm:tracking-tight lg:text-6xl">
-            The World's Best <span class="text-indigo-600">Jobs Scrapper API</span>
+<section class="relative pt-20 pb-32 overflow-hidden">
+    <div class="absolute top-0 left-1/2 -translate-x-1/2 w-full h-[500px] bg-indigo-500/20 blur-[120px] rounded-full pointer-events-none"></div>
+
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center">
+
+        <span class="inline-block py-1 px-3 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-300 text-xs font-semibold mb-6 tracking-wide uppercase">
+            v1.0 is Live • Scrape LinkedIn & WWR
+        </span>
+
+        <h1 class="text-5xl md:text-7xl font-bold tracking-tight text-white mb-6">
+            The <span class="bg-clip-text text-transparent bg-gradient-to-r from-indigo-400 to-cyan-400">Real-Time</span><br>
+            Remote Jobs API
         </h1>
-        <p class="mt-4 max-w-2xl text-xl text-gray-500 mx-auto">
-            Access {{ job_count }}+ fresh jobs from LinkedIn, WeWorkRemotely, and RemoteOK.
-            One API to rule them all.
+
+        <p class="mt-4 text-xl text-slate-400 max-w-2xl mx-auto mb-10">
+            Stop parsing HTML. Get structured job data from LinkedIn, WeWorkRemotely, and more with a single REST API call.
         </p>
-        <div class="mt-8">
-            <a href="{% url 'dashboard' %}" class="inline-flex items-center justify-center px-8 py-3 border border-transparent text-base font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 md:py-4 md:text-lg md:px-10">
-                Get Your API Key
+
+        <div class="flex flex-col sm:flex-row justify-center gap-4">
+            <a href="{% url 'register' %}" class="inline-flex items-center justify-center px-8 py-4 text-base font-bold text-white transition-all duration-200 bg-indigo-600 rounded-lg hover:bg-indigo-500 hover:shadow-[0_0_20px_rgba(79,70,229,0.5)]">
+                Get API Key Free
+            </a>
+            <a href="{% url 'developer_guide' %}" class="inline-flex items-center justify-center px-8 py-4 text-base font-bold text-slate-300 transition-all duration-200 bg-slate-800 border border-slate-700 rounded-lg hover:bg-slate-700 hover:text-white hover:border-slate-500">
+                Read Documentation
             </a>
         </div>
+
+        <div class="mt-16 mx-auto max-w-4xl transform hover:scale-[1.01] transition-transform duration-500">
+            <div class="bg-slate-900 border border-slate-700/50 rounded-xl overflow-hidden shadow-2xl">
+                <div class="flex items-center px-4 py-2 bg-slate-800/50 border-b border-slate-700/50">
+                    <div class="flex space-x-2">
+                        <div class="w-3 h-3 rounded-full bg-red-500"></div>
+                        <div class="w-3 h-3 rounded-full bg-yellow-500"></div>
+                        <div class="w-3 h-3 rounded-full bg-green-500"></div>
+                    </div>
+                    <div class="mx-auto text-xs text-slate-500 font-mono">bash</div>
+                </div>
+                <div class="p-6 text-left overflow-x-auto">
+<pre class="font-mono text-sm leading-6">
+<span class="text-pink-400">$</span> curl -X GET "https://api.jobsapi.com/v1/jobs/?search=Python" \
+  -H "Authorization: Api-Key <span class="text-yellow-300">YOUR_KEY_HERE</span>"
+
+<span class="text-slate-500"># Response:</span>
+<span class="text-green-400">{</span>
+  <span class="text-indigo-300">"count"</span>: <span class="text-cyan-300">1250</span>,
+  <span class="text-indigo-300">"results"</span>: [
+    <span class="text-yellow-300">{</span> <span class="text-indigo-300">"title"</span>: <span class="text-emerald-300">"Senior Python Engineer"</span>, <span class="text-indigo-300">"company"</span>: <span class="text-emerald-300">"Spotify"</span> ... <span class="text-yellow-300">}</span>
+  ]
+<span class="text-green-400">}</span>
+</pre>
+                </div>
+            </div>
+        </div>
     </div>
-</div>
+</section>
+
+<section class="py-20 bg-slate-900/30 border-t border-white/5">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+
+            <div class="p-8 bg-slate-900 border border-slate-800 rounded-2xl hover:border-indigo-500/50 transition-colors group">
+                <div class="w-12 h-12 bg-indigo-500/10 rounded-lg flex items-center justify-center mb-6 group-hover:bg-indigo-500/20 transition-colors">
+                    <svg class="w-6 h-6 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+                </div>
+                <h3 class="text-xl font-bold text-white mb-3">Live Scraping</h3>
+                <p class="text-slate-400">Our engines scrape data in real-time if the cache is empty. You never get stale data.</p>
+            </div>
+
+            <div class="p-8 bg-slate-900 border border-slate-800 rounded-2xl hover:border-cyan-500/50 transition-colors group">
+                <div class="w-12 h-12 bg-cyan-500/10 rounded-lg flex items-center justify-center mb-6 group-hover:bg-cyan-500/20 transition-colors">
+                    <svg class="w-6 h-6 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4"/></svg>
+                </div>
+                <h3 class="text-xl font-bold text-white mb-3">Unified Schema</h3>
+                <p class="text-slate-400">LinkedIn, WWR, and RemoteOK data all normalized into one standard JSON format.</p>
+            </div>
+
+            <div class="p-8 bg-slate-900 border border-slate-800 rounded-2xl hover:border-purple-500/50 transition-colors group">
+                <div class="w-12 h-12 bg-purple-500/10 rounded-lg flex items-center justify-center mb-6 group-hover:bg-purple-500/20 transition-colors">
+                    <svg class="w-6 h-6 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+                </div>
+                <h3 class="text-xl font-bold text-white mb-3">Enterprise Security</h3>
+                <p class="text-slate-400">API Key authentication, rate limiting, and IP whitelisting included out of the box.</p>
+            </div>
+
+        </div>
+    </div>
+</section>
 {% endblock %}
