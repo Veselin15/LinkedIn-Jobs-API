@@ -77,18 +77,6 @@
                                 </form>
                                 <div class="mt-6 flex space-x-4 border-t border-gray-200 pt-4">
                                     <div class="flex-1">
-                                        <h4 class="text-sm font-medium text-gray-900">Security</h4>
-                                        <form action="{% url 'regenerate_api_key' %}" method="POST" class="mt-2"
-                                              onsubmit="return confirm('Regenerate key?');">
-                                            {% csrf_token %}
-                                            <button type="submit"
-                                                    class="text-indigo-600 hover:text-indigo-800 text-sm font-medium">
-                                                Regenerate API Key
-                                            </button>
-                                        </form>
-                                    </div>
-
-                                    <div class="flex-1">
                                         <h4 class="text-sm font-medium text-gray-900">Billing</h4>
                                         <form action="{% url 'billing_portal' %}" method="POST" class="mt-2">
                                             {% csrf_token %}
