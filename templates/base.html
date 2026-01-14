@@ -5,10 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Remote Jobs API</title>
 
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.2.1/flowbite.min.css" rel="stylesheet" />
     <script src="https://unpkg.com/htmx.org@1.9.10"></script>
@@ -18,53 +15,42 @@
             darkMode: 'class',
             theme: {
                 extend: {
-                    fontFamily: {
-                        sans: ['Inter', 'sans-serif'],
-                    },
+                    fontFamily: { sans: ['Inter', 'sans-serif'] },
                     colors: {
-                        slate: {
-                            850: '#1e293b',
-                            900: '#0f172a',
-                            950: '#020617',
-                        },
-                        primary: {
-                            500: '#6366f1',
-                            600: '#4f46e5',
-                        }
+                        // Using standard Slate but avoiding the super dark 950
                     }
                 }
             }
         }
     </script>
     <style>
-        /* Tech Grid Background */
+        /* Twilight Grid Background - Lighter & Softer */
         body {
-            background-color: #020617; /* Slate 950 */
+            background-color: #0f172a; /* Slate 900 (Not Black) */
             background-image:
+                radial-gradient(circle at 50% 0%, #1e293b 0%, transparent 70%), /* Top Light Source */
                 linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
                 linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
-            background-size: 30px 30px;
+            background-size: 100% 100%, 40px 40px, 40px 40px;
         }
-
-        /* Smooth Scrolling */
         html { scroll-behavior: smooth; }
     </style>
 </head>
 <body class="text-slate-300 font-sans flex flex-col min-h-screen selection:bg-indigo-500 selection:text-white">
 
-<nav class="fixed w-full z-50 top-0 start-0 border-b border-white/10 bg-slate-950/70 backdrop-blur-md">
+<nav class="fixed w-full z-50 top-0 start-0 border-b border-white/10 bg-slate-900/80 backdrop-blur-md">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex justify-between h-16 items-center">
 
             <div class="flex items-center gap-2">
                 <span class="text-2xl">🚀</span>
-                <a href="/" class="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-indigo-400 to-cyan-400">
+                <a href="/" class="text-xl font-bold text-white tracking-tight hover:text-indigo-400 transition-colors">
                     JobsAPI
                 </a>
 
                 <div class="hidden md:flex ml-10 space-x-8">
-                    <a href="{% url 'job_list' %}" class="text-sm font-medium text-slate-300 hover:text-white transition-colors hover:drop-shadow-[0_0_10px_rgba(255,255,255,0.5)]">Browse Jobs</a>
-                    <a href="{% url 'developer_guide' %}" class="text-sm font-medium text-slate-300 hover:text-white transition-colors">Developers</a>
+                    <a href="{% url 'job_list' %}" class="text-sm font-medium text-slate-300 hover:text-white hover:bg-white/5 px-3 py-2 rounded-md transition-all">Browse Jobs</a>
+                    <a href="{% url 'developer_guide' %}" class="text-sm font-medium text-slate-300 hover:text-white hover:bg-white/5 px-3 py-2 rounded-md transition-all">Documentation</a>
                 </div>
             </div>
 
@@ -77,9 +63,8 @@
                     </form>
                 {% else %}
                     <a href="{% url 'login' %}" class="text-sm font-medium text-slate-300 hover:text-white">Log In</a>
-                    <a href="{% url 'register' %}" class="group relative inline-flex items-center justify-center px-4 py-2 text-sm font-bold text-white transition-all duration-200 bg-indigo-600 font-pj rounded-lg focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-600 hover:bg-indigo-500">
-                        <div class="absolute -inset-2 rounded-lg bg-gradient-to-r from-cyan-400 via-indigo-500 to-purple-500 opacity-20 group-hover:opacity-100 blur transition duration-200"></div>
-                        <span class="relative">Get API Key</span>
+                    <a href="{% url 'register' %}" class="px-4 py-2 text-sm font-bold text-white bg-indigo-600 rounded-lg hover:bg-indigo-500 shadow-lg shadow-indigo-500/20 transition-all">
+                        Get API Key
                     </a>
                 {% endif %}
             </div>

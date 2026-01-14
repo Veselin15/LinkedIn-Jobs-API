@@ -1,9 +1,12 @@
-<div id="pricing-modal" tabindex="-1" aria-hidden="true" class="hidden overflow-y-auto overflow-x-hidden fixed top-0 right-0 left-0 z-50 justify-center items-center w-full md:inset-0 h-[calc(100%-1rem)] max-h-full">
+<div id="pricing-modal" tabindex="-1" aria-hidden="true" class="hidden overflow-y-auto overflow-x-hidden fixed top-0 right-0 left-0 z-50 justify-center items-center w-full md:inset-0 h-[calc(100%-1rem)] max-h-full backdrop-blur-sm">
     <div class="relative p-4 w-full max-w-4xl max-h-full">
-        <div class="relative bg-white rounded-lg shadow dark:bg-gray-700">
-            <div class="flex items-center justify-between p-4 md:p-5 border-b rounded-t dark:border-gray-600">
-                <h3 class="text-xl font-semibold text-gray-900 dark:text-white">Pricing Plans</h3>
-                <button type="button" class="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center dark:hover:bg-gray-600 dark:hover:text-white" data-modal-hide="pricing-modal">
+        <div class="relative bg-slate-900 border border-white/10 rounded-2xl shadow-2xl">
+
+            <div class="flex items-center justify-between p-4 md:p-5 border-b border-white/10">
+                <h3 class="text-xl font-semibold text-white">
+                    Pricing Plans
+                </h3>
+                <button type="button" class="text-slate-400 bg-transparent hover:bg-white/5 hover:text-white rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center transition-colors" data-modal-hide="pricing-modal">
                     <svg class="w-3 h-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 14">
                         <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"/>
                     </svg>
@@ -11,56 +14,58 @@
                 </button>
             </div>
 
-            <div class="p-4 md:p-5 space-y-4">
+            <div class="p-6 md:p-8">
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
 
-                    <div class="p-6 bg-gray-50 rounded-lg border border-gray-200 dark:bg-gray-800 dark:border-gray-600">
-                        <h2 class="text-lg font-medium text-gray-900 dark:text-white">Hobbyist (Free)</h2>
-                        <p class="mt-4 text-3xl font-bold text-gray-900 dark:text-white">$0<span class="text-sm font-normal text-gray-500">/mo</span></p>
-                        <ul class="mt-4 space-y-2 text-sm text-gray-500 dark:text-gray-400">
-                            <li>✅ 10 Requests / Day</li>
-                            <li>✅ Public Job Browsing</li>
-                            <li>❌ No API Key</li>
+                    <div class="p-6 bg-slate-800/50 rounded-xl border border-white/5">
+                        <h2 class="text-lg font-medium text-slate-300">Hobbyist (Free)</h2>
+                        <p class="mt-4 text-3xl font-bold text-white">$0<span class="text-sm font-normal text-slate-500">/mo</span></p>
+                        <ul class="mt-6 space-y-3 text-sm text-slate-400">
+                            <li class="flex items-center gap-2"><svg class="w-4 h-4 text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg> 10 Requests / Day</li>
+                            <li class="flex items-center gap-2"><svg class="w-4 h-4 text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg> Public Job Browsing</li>
+                            <li class="flex items-center gap-2 text-slate-600"><svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg> No API Key</li>
                         </ul>
 
                         {% if is_premium %}
-                            <button class="mt-4 block w-full bg-transparent border border-gray-300 text-gray-500 text-center py-2 rounded cursor-default">
+                            <button class="mt-8 block w-full bg-white/5 border border-white/10 text-slate-500 text-center py-2.5 rounded-lg cursor-default font-medium">
                                 Included
                             </button>
                         {% else %}
-                            <button class="mt-4 block w-full bg-gray-200 text-gray-600 text-center py-2 rounded cursor-not-allowed">
+                            <button class="mt-8 block w-full bg-slate-800 text-slate-500 text-center py-2.5 rounded-lg cursor-not-allowed font-medium">
                                 Current Plan
                             </button>
                         {% endif %}
                     </div>
 
-                    <div class="p-6 bg-white rounded-lg border-2 border-indigo-500 relative dark:bg-gray-800">
+                    <div class="relative p-6 bg-indigo-900/10 rounded-xl border border-indigo-500/30 overflow-hidden group">
+                        <div class="absolute -top-10 -right-10 w-40 h-40 bg-indigo-500/20 blur-[50px] rounded-full pointer-events-none group-hover:bg-indigo-500/30 transition-all"></div>
+
                         {% if not is_premium %}
-                            <div class="absolute top-0 right-0 bg-indigo-500 text-white text-xs px-2 py-1 rounded-bl">RECOMMENDED</div>
+                            <div class="absolute top-0 right-0 bg-indigo-600 text-white text-[10px] font-bold px-3 py-1 rounded-bl-lg tracking-wider uppercase">RECOMMENDED</div>
                         {% endif %}
 
-                        <h2 class="text-lg font-medium text-indigo-600 dark:text-indigo-400">Developer Pro</h2>
-                        <p class="mt-4 text-3xl font-bold text-gray-900 dark:text-white">$10<span class="text-sm font-normal text-gray-500">/mo</span></p>
-                        <ul class="mt-4 space-y-2 text-sm text-gray-500 dark:text-gray-400">
-                            <li>✅ 1,000 Requests / Day</li>
-                            <li>✅ Private API Key</li>
-                            <li>✅ On-Demand Scraping</li>
+                        <h2 class="text-lg font-medium text-indigo-400">Developer Pro</h2>
+                        <p class="mt-4 text-3xl font-bold text-white">$10<span class="text-sm font-normal text-slate-500">/mo</span></p>
+                        <ul class="mt-6 space-y-3 text-sm text-slate-300">
+                            <li class="flex items-center gap-2"><svg class="w-4 h-4 text-indigo-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg> 1,000 Requests / Day</li>
+                            <li class="flex items-center gap-2"><svg class="w-4 h-4 text-indigo-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg> Private API Key</li>
+                            <li class="flex items-center gap-2"><svg class="w-4 h-4 text-indigo-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg> On-Demand Scraping</li>
                         </ul>
 
                         {% if is_premium %}
-                            <a href="{% url 'dashboard' %}" class="mt-4 block w-full bg-green-600 text-white text-center py-2 rounded hover:bg-green-700 font-bold">
-                                Current Plan (Manage)
+                            <a href="{% url 'dashboard' %}" class="mt-8 block w-full bg-green-500/10 border border-green-500/50 text-green-400 text-center py-2.5 rounded-lg hover:bg-green-500/20 font-bold transition-all">
+                                Manage Plan
                             </a>
                         {% else %}
                             {% if user.is_authenticated %}
                                 <form action="{% url 'checkout' %}" method="POST">
                                     {% csrf_token %}
-                                    <button type="submit" class="mt-4 block w-full bg-indigo-600 text-white text-center py-2 rounded hover:bg-indigo-700 font-bold">
+                                    <button type="submit" class="mt-8 block w-full bg-indigo-600 text-white text-center py-2.5 rounded-lg hover:bg-indigo-500 font-bold shadow-lg shadow-indigo-500/25 transition-all">
                                         Upgrade Now
                                     </button>
                                 </form>
                             {% else %}
-                                <a href="{% url 'register' %}" class="mt-4 block w-full bg-indigo-600 text-white text-center py-2 rounded hover:bg-indigo-700 font-bold">
+                                <a href="{% url 'register' %}" class="mt-8 block w-full bg-indigo-600 text-white text-center py-2.5 rounded-lg hover:bg-indigo-500 font-bold shadow-lg shadow-indigo-500/25 transition-all">
                                     Get Started
                                 </a>
                             {% endif %}
@@ -73,48 +78,54 @@
     </div>
 </div>
 
-<div id="privacy-modal" tabindex="-1" aria-hidden="true" class="hidden overflow-y-auto overflow-x-hidden fixed top-0 right-0 left-0 z-50 justify-center items-center w-full md:inset-0 h-[calc(100%-1rem)] max-h-full">
+<div id="privacy-modal" tabindex="-1" aria-hidden="true" class="hidden overflow-y-auto overflow-x-hidden fixed top-0 right-0 left-0 z-50 justify-center items-center w-full md:inset-0 h-[calc(100%-1rem)] max-h-full backdrop-blur-sm">
     <div class="relative p-4 w-full max-w-2xl max-h-full">
-        <div class="relative bg-white rounded-lg shadow dark:bg-gray-700">
-            <div class="flex items-center justify-between p-4 md:p-5 border-b rounded-t dark:border-gray-600">
-                <h3 class="text-xl font-semibold text-gray-900 dark:text-white">Privacy Policy</h3>
-                <button type="button" class="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center dark:hover:bg-gray-600 dark:hover:text-white" data-modal-hide="privacy-modal">
+        <div class="relative bg-slate-900 border border-white/10 rounded-2xl shadow-2xl">
+            <div class="flex items-center justify-between p-4 md:p-5 border-b border-white/10">
+                <h3 class="text-xl font-semibold text-white">Privacy Policy</h3>
+                <button type="button" class="text-slate-400 bg-transparent hover:bg-white/5 hover:text-white rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center transition-colors" data-modal-hide="privacy-modal">
                     <svg class="w-3 h-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 14">
                         <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"/>
                     </svg>
                     <span class="sr-only">Close modal</span>
                 </button>
             </div>
-            <div class="p-4 md:p-5 space-y-4">
-                <p class="text-base leading-relaxed text-gray-500 dark:text-gray-400">
-                    <strong>1. Data Collection:</strong> We collect minimal data (email) to operate your account and prevent API abuse.
+            <div class="p-6 md:p-8 space-y-6">
+                <p class="text-base leading-relaxed text-slate-300">
+                    <strong class="text-white">1. Data Collection:</strong> We collect minimal data (email) solely to operate your account and prevent API abuse. We do not track your browsing history outside of our platform.
                 </p>
-                <p class="text-base leading-relaxed text-gray-500 dark:text-gray-400">
-                    <strong>2. Usage:</strong> Your data is never sold. It is only used for authentication and billing via Stripe.
+                <p class="text-base leading-relaxed text-slate-300">
+                    <strong class="text-white">2. Usage:</strong> Your data is never sold to third parties. It is securely stored and only used for authentication and billing via Stripe.
+                </p>
+                <p class="text-base leading-relaxed text-slate-300">
+                    <strong class="text-white">3. Cookies:</strong> We use essential cookies to keep you logged in. No advertising cookies are used.
                 </p>
             </div>
         </div>
     </div>
 </div>
 
-<div id="terms-modal" tabindex="-1" aria-hidden="true" class="hidden overflow-y-auto overflow-x-hidden fixed top-0 right-0 left-0 z-50 justify-center items-center w-full md:inset-0 h-[calc(100%-1rem)] max-h-full">
+<div id="terms-modal" tabindex="-1" aria-hidden="true" class="hidden overflow-y-auto overflow-x-hidden fixed top-0 right-0 left-0 z-50 justify-center items-center w-full md:inset-0 h-[calc(100%-1rem)] max-h-full backdrop-blur-sm">
     <div class="relative p-4 w-full max-w-2xl max-h-full">
-        <div class="relative bg-white rounded-lg shadow dark:bg-gray-700">
-            <div class="flex items-center justify-between p-4 md:p-5 border-b rounded-t dark:border-gray-600">
-                <h3 class="text-xl font-semibold text-gray-900 dark:text-white">Terms of Service</h3>
-                <button type="button" class="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center dark:hover:bg-gray-600 dark:hover:text-white" data-modal-hide="terms-modal">
+        <div class="relative bg-slate-900 border border-white/10 rounded-2xl shadow-2xl">
+            <div class="flex items-center justify-between p-4 md:p-5 border-b border-white/10">
+                <h3 class="text-xl font-semibold text-white">Terms of Service</h3>
+                <button type="button" class="text-slate-400 bg-transparent hover:bg-white/5 hover:text-white rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center transition-colors" data-modal-hide="terms-modal">
                     <svg class="w-3 h-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 14">
                         <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"/>
                     </svg>
                     <span class="sr-only">Close modal</span>
                 </button>
             </div>
-            <div class="p-4 md:p-5 space-y-4">
-                <p class="text-base leading-relaxed text-gray-500 dark:text-gray-400">
-                    <strong>1. Usage Limits:</strong> Free users are strictly limited to 10 requests/day.
+            <div class="p-6 md:p-8 space-y-6">
+                <p class="text-base leading-relaxed text-slate-300">
+                    <strong class="text-white">1. Usage Limits:</strong> Free users are strictly limited to 10 requests/day. Attempting to bypass rate limits (e.g., using multiple IPs) will result in a permanent ban.
                 </p>
-                <p class="text-base leading-relaxed text-gray-500 dark:text-gray-400">
-                    <strong>2. Liability:</strong> The service is provided "as is".
+                <p class="text-base leading-relaxed text-slate-300">
+                    <strong class="text-white">2. Data Rights:</strong> Job data is scraped from public sources. We claim no ownership over the listing content. You are responsible for how you use this data.
+                </p>
+                <p class="text-base leading-relaxed text-slate-300">
+                    <strong class="text-white">3. Liability:</strong> The service is provided "as is". We are not responsible for downtime, data inaccuracies, or missed job opportunities.
                 </p>
             </div>
         </div>
