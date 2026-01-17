@@ -1,28 +1,31 @@
-from rest_framework import generics
+from rest_framework import generics, serializers, status
+from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.renderers import JSONRenderer, TemplateHTMLRenderer
 from django.core.cache import cache
-from django_filters.rest_framework import DjangoFilterBackend  # <--- FIXED IMPORT
+from django_filters.rest_framework import DjangoFilterBackend
+from drf_spectacular.utils import extend_schema
 
 from .models import Job
 from .serializers import JobSerializer
 from .tasks import run_scrapers
 from .throttles import FreeTierThrottle, PremiumTierThrottle
-from .filters import JobFilter  # Imports the file you created in Step 1
+from .filters import JobFilter
 
 
+# --- 1. The Job List API ---
 class JobListAPI(generics.ListAPIView):
     queryset = Job.objects.all().order_by('-posted_at')
     serializer_class = JobSerializer
 
-    # Use the fixed import here
+    # Filter Backend settings
     filter_backends = [DjangoFilterBackend]
     filterset_class = JobFilter
 
-    # 1. Allow both JSON (for API) and HTML (for Browser)
+    # Allow both JSON (for API) and HTML (for Browser)
     renderer_classes = [JSONRenderer, TemplateHTMLRenderer]
 
-    # 2. Apply Limits
+    # Apply Limits
     throttle_classes = [PremiumTierThrottle, FreeTierThrottle]
 
     def list(self, request, *args, **kwargs):
@@ -34,17 +37,18 @@ class JobListAPI(generics.ListAPIView):
         # --- LOGIC: ZERO RESULTS AUTOMATIC SCRAPER ---
         if len(current_results) == 0:
             search_term = request.query_params.get('search')
-            # Fix: Check 'skills' filter too since your filter uses that name
+            # Check 'skills' filter too since your filter uses that name
             skills_term = request.query_params.get('skills')
             term_to_scrape = search_term or skills_term
 
             if term_to_scrape:
+                # Create a lock key to prevent "Thundering Herd"
                 lock_key = f"scrape_lock_{term_to_scrape.lower()}_Europe"
                 is_already_scraping = cache.get(lock_key)
 
                 if not is_already_scraping:
                     print(f"Triggering NEW scrape for '{term_to_scrape}'...")
-                    cache.set(lock_key, "active", timeout=900)
+                    cache.set(lock_key, "active", timeout=900)  # Lock for 15 mins
                     run_scrapers.delay(keyword=term_to_scrape, location="Europe")
                 else:
                     print(f"Scrape ALREADY in progress for '{term_to_scrape}'. Skipping.")
@@ -59,7 +63,8 @@ class JobListAPI(generics.ListAPIView):
 
         return response
 
-# --- 3. The Scraper Trigger (No changes here) ---
+
+# --- 2. The Scraper Trigger (Manual Endpoint) ---
 
 class ScrapeRequestSerializer(serializers.Serializer):
     keyword = serializers.CharField(default="Python", help_text="Job title or skill")
@@ -81,9 +86,4 @@ class ScrapeTriggerAPI(APIView):
                 "target": f"{keyword} jobs in {location}",
                 "note": "Check back in 2-3 minutes for results."
             })
-        return Response(serializer.errors, status=400)
-
-class StandardResultsSetPagination(PageNumberPagination):
-    page_size = 20
-    page_size_query_param = 'page_size' # User can use ?page_size=50
-    max_page_size = 100
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
