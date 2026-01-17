@@ -1,27 +1,33 @@
 from rest_framework.throttling import SimpleRateThrottle
 from rest_framework_api_key.models import APIKey
 
-
 class FreeTierThrottle(SimpleRateThrottle):
     """
-    Limits ANY request (authenticated or not) to 10/day by IP,
-    UNLESS a valid API Key is provided.
+    Limits:
+    1. Standard API requests (Scripts/cURL) -> 10/day
+    2. Web Frontend (HTMX) -> Unlimited (or very high)
+    3. Premium Keys -> Unlimited (Handled by PremiumThrottle)
     """
     scope = 'free_tier'
     rate = '10/day'
 
     def get_cache_key(self, request, view):
+        # 0. BYPASS: If it is the Web Frontend (HTMX) or Admin, allow unlimited
+        # Security Note: Headers can be spoofed, but for a portfolio, this is fine.
+        if request.headers.get('HX-Request') == 'true' or request.user.is_staff:
+            return None
+
         # 1. Check for API Key Header
         auth_header = request.META.get("HTTP_AUTHORIZATION")
         if auth_header and auth_header.startswith("Api-Key "):
             try:
                 key_value = auth_header.split()[1]
                 if APIKey.objects.get_from_key(key_value):
-                    return None  # Valid Key? Skip this throttle completely.
+                    return None  # Valid Key? Skip this throttle (let PremiumThrottle handle it)
             except:
                 pass
 
-                # 2. No Key? Throttle by IP Address (Even if logged in!)
+        # 2. No Key? Throttle by IP Address
         ident = self.get_ident(request)
         return self.cache_format % {
             'scope': self.scope,

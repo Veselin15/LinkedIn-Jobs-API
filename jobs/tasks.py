@@ -21,13 +21,18 @@ def run_scrapers(keyword='Python', location='Europe'):
     results.append("WWR")
 
     # 2. Run LinkedIn (Targeted Search - 20-30 seconds)
-    print(f"🔎 [On-Demand] Starting LinkedIn Scrape for {keyword}...")
-    subprocess.run([
-        "scrapy", "crawl", "linkedin",
-        "-a", f"keyword={keyword}",
-        "-a", f"location={location}"
-    ], cwd="/app/scraper_service")
-    results.append("LinkedIn")
+    try:
+        print(f"🔍 [On-Demand] Starting LinkedIn Scrape for {keyword}...")
+        subprocess.run([
+            "scrapy", "crawl", "linkedin",
+            "-a", f"keyword={keyword}",
+            "-a", f"location={location}"
+        ], cwd="/app/scraper_service", timeout=120)  # <--- Hard limit 2 minutes
+        results.append("LinkedIn")
+    except subprocess.TimeoutExpired:
+        print(f"⚠️ Scrape for {keyword} timed out! Killing process.")
+        # Subprocess is killed automatically by the exception, but we log it.
+        return "Scrape Timed Out"
 
     return f"Scraping Finished. Sources: {', '.join(results)}"
 
