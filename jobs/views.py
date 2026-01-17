@@ -1,52 +1,22 @@
-import re
-from rest_framework import generics, filters, serializers
-from rest_framework.renderers import JSONRenderer, TemplateHTMLRenderer
-from rest_framework.views import APIView
+from rest_framework import generics
 from rest_framework.response import Response
-from django_filters import rest_framework as django_filters
-from drf_spectacular.utils import extend_schema
-from rest_framework.pagination import PageNumberPagination
+from rest_framework.renderers import JSONRenderer, TemplateHTMLRenderer
 from django.core.cache import cache
-import django_filters
+from django_filters.rest_framework import DjangoFilterBackend  # <--- FIXED IMPORT
+
 from .models import Job
 from .serializers import JobSerializer
 from .tasks import run_scrapers
 from .throttles import FreeTierThrottle, PremiumTierThrottle
-
-class JobFilter(django_filters.FilterSet):
-    # Standard text searches
-    title = django_filters.CharFilter(lookup_expr='icontains')
-    company = django_filters.CharFilter(lookup_expr='icontains')
-    location = django_filters.CharFilter(lookup_expr='icontains')
-    seniority = django_filters.CharFilter(lookup_expr='icontains')
-    source = django_filters.CharFilter(lookup_expr='icontains')
-
-    # Salary Filter (Greater than or equal to)
-    salary_min = django_filters.NumberFilter(field_name='salary_min', lookup_expr='gte')
-
-    # Custom Skills Filter (Search inside JSON List)
-    skills = django_filters.CharFilter(method='filter_skills')
-
-    class Meta:
-        model = Job
-        fields = ['title', 'company', 'location', 'skills', 'seniority', 'salary_min', 'source']
-
-    def filter_skills(self, queryset, name, value):
-        """
-        Searches for a specific skill inside the JSONField list.
-        Example: Searching for 'Java' matches ["Java", "Python"] but NOT ["JavaScript"].
-        """
-        if not value:
-            return queryset
-
-        # We search for the exact string wrapped in quotes inside the JSON structure
-        return queryset.filter(skills__iregex=f'"{re.escape(value)}"')
+from .filters import JobFilter  # Imports the file you created in Step 1
 
 
 class JobListAPI(generics.ListAPIView):
     queryset = Job.objects.all().order_by('-posted_at')
     serializer_class = JobSerializer
-    filter_backends = [django_filters.DjangoFilterBackend]
+
+    # Use the fixed import here
+    filter_backends = [DjangoFilterBackend]
     filterset_class = JobFilter
 
     # 1. Allow both JSON (for API) and HTML (for Browser)
@@ -56,15 +26,15 @@ class JobListAPI(generics.ListAPIView):
     throttle_classes = [PremiumTierThrottle, FreeTierThrottle]
 
     def list(self, request, *args, **kwargs):
-        # Fetch the data normally
         response = super().list(request, *args, **kwargs)
 
-        # Handle Pagination (DRF returns a dict 'results' if paginated, or a list if not)
+        # Handle Pagination
         current_results = response.data['results'] if isinstance(response.data, dict) else response.data
 
         # --- LOGIC: ZERO RESULTS AUTOMATIC SCRAPER ---
         if len(current_results) == 0:
             search_term = request.query_params.get('search')
+            # Fix: Check 'skills' filter too since your filter uses that name
             skills_term = request.query_params.get('skills')
             term_to_scrape = search_term or skills_term
 
@@ -74,29 +44,20 @@ class JobListAPI(generics.ListAPIView):
 
                 if not is_already_scraping:
                     print(f"Triggering NEW scrape for '{term_to_scrape}'...")
-                    cache.set(lock_key, "active", timeout=900)  # Lock for 15 mins
+                    cache.set(lock_key, "active", timeout=900)
                     run_scrapers.delay(keyword=term_to_scrape, location="Europe")
                 else:
                     print(f"Scrape ALREADY in progress for '{term_to_scrape}'. Skipping.")
 
-                # Optional: You can return a message here, but for HTML/HTMX
-                # we usually just return the empty list so the "No Jobs Found" UI shows up.
-
         # --- LOGIC: CONTENT NEGOTIATION ---
-
-        # 1. Web Browser Request (HTMX)
-        # We return HTML so the user can browse freely without hitting API limits.
+        # If HTMX/Browser, return HTML
         if request.headers.get('HX-Request') == 'true':
             return Response(
-                # We pass the results list as 'page_obj' to match the template's expectation
                 {'page_obj': current_results},
                 template_name='core/partials/job_results.html'
             )
 
-        # 2. Standard API Request (Postman, Python, cURL)
-        # Returns standard JSON
         return response
-
 
 # --- 3. The Scraper Trigger (No changes here) ---
 
