@@ -1,96 +1,100 @@
 import re
 from rest_framework import generics, filters, serializers
+from rest_framework.renderers import JSONRenderer, TemplateHTMLRenderer
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from django_filters import rest_framework as django_filters
 from drf_spectacular.utils import extend_schema
 from rest_framework.pagination import PageNumberPagination
 from django.core.cache import cache
-# --- NEW SECURITY IMPORTS ---
-from rest_framework_api_key.permissions import HasAPIKey
-from rest_framework.permissions import IsAuthenticatedOrReadOnly
-from .throttles import FreeTierThrottle, PremiumTierThrottle # <--- Import your throttles
-
+import django_filters
 from .models import Job
 from .serializers import JobSerializer
 from .tasks import run_scrapers
 from .throttles import FreeTierThrottle, PremiumTierThrottle
 
-# --- 1. Define the Custom Filter (The Input Boxes) ---
 class JobFilter(django_filters.FilterSet):
-    # specific boxes for searching
+    # Standard text searches
     title = django_filters.CharFilter(lookup_expr='icontains')
     company = django_filters.CharFilter(lookup_expr='icontains')
     location = django_filters.CharFilter(lookup_expr='icontains')
-
-    # The "Skills" box you wanted!
-    # (We search the text inside the JSON list)
-    skills = django_filters.CharFilter(method='filter_skills')
     seniority = django_filters.CharFilter(lookup_expr='icontains')
-    # Keep salary filter
+    source = django_filters.CharFilter(lookup_expr='icontains')
+
+    # Salary Filter (Greater than or equal to)
     salary_min = django_filters.NumberFilter(field_name='salary_min', lookup_expr='gte')
+
+    # Custom Skills Filter (Search inside JSON List)
+    skills = django_filters.CharFilter(method='filter_skills')
 
     class Meta:
         model = Job
         fields = ['title', 'company', 'location', 'skills', 'seniority', 'salary_min', 'source']
 
     def filter_skills(self, queryset, name, value):
+        """
+        Searches for a specific skill inside the JSONField list.
+        Example: Searching for 'Java' matches ["Java", "Python"] but NOT ["JavaScript"].
+        """
         if not value:
             return queryset
 
-        # We search for the value wrapped in quotes.
-        # In the DB, the list looks like: ["Java", "Python"]
-        # Searching for "Java" (with quotes) matches "Java" but NOT "JavaScript".
-        # iregex makes it case-insensitive but quote-sensitive.
+        # We search for the exact string wrapped in quotes inside the JSON structure
         return queryset.filter(skills__iregex=f'"{re.escape(value)}"')
+
+
 class JobListAPI(generics.ListAPIView):
     queryset = Job.objects.all().order_by('-posted_at')
     serializer_class = JobSerializer
     filter_backends = [django_filters.DjangoFilterBackend]
     filterset_class = JobFilter
 
+    # 1. Allow both JSON (for API) and HTML (for Browser)
+    renderer_classes = [JSONRenderer, TemplateHTMLRenderer]
+
+    # 2. Apply Limits
     throttle_classes = [PremiumTierThrottle, FreeTierThrottle]
 
     def list(self, request, *args, **kwargs):
+        # Fetch the data normally
         response = super().list(request, *args, **kwargs)
 
-        # Handle Pagination (access 'results') vs No Pagination (access list directly)
+        # Handle Pagination (DRF returns a dict 'results' if paginated, or a list if not)
         current_results = response.data['results'] if isinstance(response.data, dict) else response.data
 
+        # --- LOGIC: ZERO RESULTS AUTOMATIC SCRAPER ---
         if len(current_results) == 0:
             search_term = request.query_params.get('search')
             skills_term = request.query_params.get('skills')
             term_to_scrape = search_term or skills_term
 
             if term_to_scrape:
-                # --- NEW LOGIC STARTS HERE ---
-
-                # 1. Create a unique "Lock Key" for this search
-                # We normalize it to lowercase so "Python" and "python" are treated the same.
                 lock_key = f"scrape_lock_{term_to_scrape.lower()}_Europe"
-
-                # 2. Check if the lock exists
                 is_already_scraping = cache.get(lock_key)
 
                 if not is_already_scraping:
                     print(f"Triggering NEW scrape for '{term_to_scrape}'...")
-
-                    # 3. Set the Lock!
-                    # 'timeout=900' means "Don't scrape this keyword again for 15 minutes"
-                    cache.set(lock_key, "active", timeout=900)
-
-                    # 4. Trigger the task
+                    cache.set(lock_key, "active", timeout=900)  # Lock for 15 mins
                     run_scrapers.delay(keyword=term_to_scrape, location="Europe")
                 else:
-                    print(f"Scrape ALREADY in progress for '{term_to_scrape}'. Skipping trigger.")
+                    print(f"Scrape ALREADY in progress for '{term_to_scrape}'. Skipping.")
 
-                # --- NEW LOGIC ENDS HERE ---
+                # Optional: You can return a message here, but for HTML/HTMX
+                # we usually just return the empty list so the "No Jobs Found" UI shows up.
 
-                return Response({
-                    "message": f"No jobs found for '{term_to_scrape}'. We are scraping the web for you now! Check back in a few minutes.",
-                    "results": []
-                })
+        # --- LOGIC: CONTENT NEGOTIATION ---
 
+        # 1. Web Browser Request (HTMX)
+        # We return HTML so the user can browse freely without hitting API limits.
+        if request.headers.get('HX-Request') == 'true':
+            return Response(
+                # We pass the results list as 'page_obj' to match the template's expectation
+                {'page_obj': current_results},
+                template_name='core/partials/job_results.html'
+            )
+
+        # 2. Standard API Request (Postman, Python, cURL)
+        # Returns standard JSON
         return response
 
 

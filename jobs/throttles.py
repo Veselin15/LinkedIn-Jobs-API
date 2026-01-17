@@ -1,29 +1,37 @@
 from rest_framework.throttling import SimpleRateThrottle
 from rest_framework_api_key.models import APIKey
 
+
 class FreeTierThrottle(SimpleRateThrottle):
     """
     Limits:
-    1. Standard API requests (Scripts/cURL) -> 10/day
-    2. Web Frontend (HTMX) -> Unlimited (or very high)
-    3. Premium Keys -> Unlimited (Handled by PremiumThrottle)
+    1. Scripts/Postman -> 10/day (Strict)
+    2. Web Browsers -> Unlimited (Bypass)
     """
     scope = 'free_tier'
     rate = '10/day'
 
-    def get_cache_key(self, request, view):
-        # 0. BYPASS: If it is the Web Frontend (HTMX) or Admin, allow unlimited
-        # Security Note: Headers can be spoofed, but for a portfolio, this is fine.
-        if request.headers.get('HX-Request') == 'true' or request.user.is_staff:
-            return None
+    def allow_request(self, request, view):
+        # --- NEW: BYPASS FOR BROWSERS ---
+        # If the user is asking for HTML (Web Page) or using HTMX, let them in!
+        if request.accepts('text/html') or request.headers.get('HX-Request') == 'true':
+            return True  # Skip throttling completely
 
-        # 1. Check for API Key Header
+        # If the user is an Admin, also skip
+        if request.user.is_staff:
+            return True
+
+        # Otherwise, run the standard check (Limits API scripts)
+        return super().allow_request(request, view)
+
+    def get_cache_key(self, request, view):
+        # 1. Check for API Key Header (Premium Bypass)
         auth_header = request.META.get("HTTP_AUTHORIZATION")
         if auth_header and auth_header.startswith("Api-Key "):
             try:
                 key_value = auth_header.split()[1]
                 if APIKey.objects.get_from_key(key_value):
-                    return None  # Valid Key? Skip this throttle (let PremiumThrottle handle it)
+                    return None  # Valid Key? Skip throttle.
             except:
                 pass
 
@@ -35,11 +43,8 @@ class FreeTierThrottle(SimpleRateThrottle):
         }
 
 
+# PremiumThrottle remains the same...
 class PremiumTierThrottle(SimpleRateThrottle):
-    """
-    Limits API Key users to 1000/day.
-    If no key is found, this rule is IGNORED.
-    """
     scope = 'premium_tier'
     rate = '1000/day'
 
@@ -49,11 +54,8 @@ class PremiumTierThrottle(SimpleRateThrottle):
             return None  # Not a premium request, ignore.
 
         try:
-            # Throttle based on the unique API Key ID
             key_value = auth_header.split()[1]
             api_key = APIKey.objects.get_from_key(key_value)
-
-            # If key is valid, throttle this specific key
             if api_key:
                 return self.cache_format % {
                     'scope': self.scope,
@@ -61,5 +63,4 @@ class PremiumTierThrottle(SimpleRateThrottle):
                 }
         except:
             pass
-
-        return None  # Invalid key, ignore.
+        return None
