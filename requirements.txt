@@ -11,4 +11,5 @@ djangorestframework-api-key
 drf-spectacular
 scrapy-user-agents
 stripe
+whitenoise
 gunicorn
