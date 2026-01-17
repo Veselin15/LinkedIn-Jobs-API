@@ -5,7 +5,7 @@ from rest_framework.response import Response
 from django_filters import rest_framework as django_filters
 from drf_spectacular.utils import extend_schema
 from rest_framework.pagination import PageNumberPagination
-
+from django.core.cache import cache
 # --- NEW SECURITY IMPORTS ---
 from rest_framework_api_key.permissions import HasAPIKey
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
@@ -53,25 +53,41 @@ class JobListAPI(generics.ListAPIView):
 
     def list(self, request, *args, **kwargs):
         response = super().list(request, *args, **kwargs)
-        pagination_class = StandardResultsSetPagination
 
         # Handle Pagination (access 'results') vs No Pagination (access list directly)
         current_results = response.data['results'] if isinstance(response.data, dict) else response.data
 
         if len(current_results) == 0:
-            # Check for ANY valid search parameter
             search_term = request.query_params.get('search')
             skills_term = request.query_params.get('skills')
-
-            # Prefer the explicit search term, otherwise use the skill
             term_to_scrape = search_term or skills_term
 
             if term_to_scrape:
-                print(f"No results for '{term_to_scrape}'. Triggering scraper...")
-                run_scrapers.delay(keyword=term_to_scrape, location="Europe")
+                # --- NEW LOGIC STARTS HERE ---
+
+                # 1. Create a unique "Lock Key" for this search
+                # We normalize it to lowercase so "Python" and "python" are treated the same.
+                lock_key = f"scrape_lock_{term_to_scrape.lower()}_Europe"
+
+                # 2. Check if the lock exists
+                is_already_scraping = cache.get(lock_key)
+
+                if not is_already_scraping:
+                    print(f"Triggering NEW scrape for '{term_to_scrape}'...")
+
+                    # 3. Set the Lock!
+                    # 'timeout=900' means "Don't scrape this keyword again for 15 minutes"
+                    cache.set(lock_key, "active", timeout=900)
+
+                    # 4. Trigger the task
+                    run_scrapers.delay(keyword=term_to_scrape, location="Europe")
+                else:
+                    print(f"Scrape ALREADY in progress for '{term_to_scrape}'. Skipping trigger.")
+
+                # --- NEW LOGIC ENDS HERE ---
 
                 return Response({
-                    "message": f"No jobs found for '{term_to_scrape}'. We have started a live scrape for you. Check back in 2 minutes!",
+                    "message": f"No jobs found for '{term_to_scrape}'. We are scraping the web for you now! Check back in a few minutes.",
                     "results": []
                 })
 
