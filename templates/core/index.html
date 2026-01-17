@@ -1,44 +1,49 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<section class="relative pt-20 pb-32 overflow-hidden">
-    <div class="absolute top-0 left-1/2 -translate-x-1/2 w-full h-[500px] bg-indigo-500/10 blur-[100px] rounded-full pointer-events-none"></div>
+<section class="relative pt-24 pb-20 lg:pt-32 lg:pb-32 overflow-hidden">
+    <div class="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-3xl h-[500px] bg-indigo-500/20 blur-[120px] rounded-full pointer-events-none mix-blend-screen"></div>
+    <div class="absolute top-0 right-0 w-96 h-96 bg-cyan-500/10 blur-[100px] rounded-full pointer-events-none"></div>
 
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center">
 
-        <span class="inline-block py-1 px-3 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-300 text-xs font-semibold mb-6">
+        <span class="inline-flex items-center py-1.5 px-3 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-300 text-xs font-semibold mb-8 tracking-wide uppercase shadow-[0_0_10px_rgba(99,102,241,0.2)]">
+            <span class="w-2 h-2 rounded-full bg-green-400 mr-2 animate-pulse"></span>
             v1.0 is Live • Scrape LinkedIn & WWR
         </span>
 
-        <h1 class="text-5xl md:text-7xl font-bold tracking-tight text-white mb-6">
-            The <span class="text-indigo-400">Real-Time</span><br>
+        <h1 class="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight text-white mb-6 leading-tight">
+            The <span class="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 via-cyan-400 to-emerald-400 animate-gradient">Real-Time</span><br class="hidden sm:block">
             Remote Jobs API
         </h1>
 
-        <p class="mt-4 text-xl text-slate-300 max-w-2xl mx-auto mb-10">
+        <p class="mt-6 text-lg sm:text-xl text-slate-300 max-w-2xl mx-auto mb-10 leading-relaxed px-4">
             Stop parsing HTML. Get structured job data from LinkedIn, WeWorkRemotely, and more with a single REST API call.
         </p>
 
-        <div class="flex flex-col sm:flex-row justify-center gap-4">
-            <a href="{% url 'register' %}" class="px-8 py-4 text-base font-bold text-white bg-indigo-600 rounded-lg hover:bg-indigo-500 shadow-lg shadow-indigo-500/25 transition-all">
+        <div class="flex flex-col sm:flex-row justify-center gap-4 px-4">
+            <a href="{% url 'register' %}" class="w-full sm:w-auto px-8 py-4 text-base font-bold text-white bg-indigo-600 rounded-xl hover:bg-indigo-500 shadow-lg shadow-indigo-500/25 transition-all transform hover:-translate-y-1">
                 Get API Key Free
             </a>
-            <a href="{% url 'developer_guide' %}" class="px-8 py-4 text-base font-bold text-white bg-white/5 border border-white/10 rounded-lg hover:bg-white/10 hover:border-white/20 backdrop-blur-sm transition-all">
+            <a href="{% url 'developer_guide' %}" class="w-full sm:w-auto px-8 py-4 text-base font-bold text-white bg-white/5 border border-white/10 rounded-xl hover:bg-white/10 hover:border-white/20 backdrop-blur-sm transition-all">
                 Read Documentation
             </a>
         </div>
 
-        <div class="mt-16 mx-auto max-w-4xl">
-            <div class="bg-slate-800/80 border border-white/10 rounded-xl overflow-hidden shadow-2xl backdrop-blur-md">
-                <div class="flex items-center px-4 py-2 bg-white/5 border-b border-white/5">
+        <div class="mt-16 mx-auto max-w-4xl px-2 sm:px-0">
+            <div class="bg-slate-900/80 border border-white/10 rounded-2xl overflow-hidden shadow-2xl backdrop-blur-md relative group">
+                <div class="absolute inset-0 bg-gradient-to-tr from-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none"></div>
+
+                <div class="flex items-center px-4 py-3 bg-white/5 border-b border-white/5">
                     <div class="flex space-x-2">
-                        <div class="w-3 h-3 rounded-full bg-red-400/80"></div>
-                        <div class="w-3 h-3 rounded-full bg-yellow-400/80"></div>
-                        <div class="w-3 h-3 rounded-full bg-green-400/80"></div>
+                        <div class="w-3 h-3 rounded-full bg-red-500/80"></div>
+                        <div class="w-3 h-3 rounded-full bg-yellow-500/80"></div>
+                        <div class="w-3 h-3 rounded-full bg-green-500/80"></div>
                     </div>
+                    <div class="mx-auto text-xs text-slate-500 font-mono hidden sm:block">bash — 80x24</div>
                 </div>
-                <div class="p-6 text-left overflow-x-auto">
-<pre class="font-mono text-sm leading-6 text-slate-300">
+                <div class="p-4 sm:p-6 text-left overflow-x-auto custom-scrollbar">
+<pre class="font-mono text-xs sm:text-sm leading-6 text-slate-300">
 <span class="text-purple-400">$</span> curl -X GET "https://api.jobsapi.com/v1/jobs/?search=Python" \
   -H "Authorization: Api-Key <span class="text-yellow-200">YOUR_KEY_HERE</span>"
 
@@ -46,7 +51,12 @@
 <span class="text-green-300">{</span>
   <span class="text-indigo-300">"count"</span>: <span class="text-cyan-300">1250</span>,
   <span class="text-indigo-300">"results"</span>: [
-    <span class="text-yellow-200">{</span> <span class="text-indigo-300">"title"</span>: <span class="text-emerald-300">"Senior Python Engineer"</span>, <span class="text-indigo-300">"company"</span>: <span class="text-emerald-300">"Spotify"</span> ... <span class="text-yellow-200">}</span>
+    <span class="text-yellow-200">{</span>
+      <span class="text-indigo-300">"title"</span>: <span class="text-emerald-300">"Senior Python Engineer"</span>,
+      <span class="text-indigo-300">"company"</span>: <span class="text-emerald-300">"Spotify"</span>,
+      <span class="text-indigo-300">"salary"</span>: <span class="text-emerald-300">"$140k - $180k"</span>
+    <span class="text-yellow-200">}</span>,
+    <span class="text-slate-500">...</span>
   ]
 <span class="text-green-300">}</span>
 </pre>
@@ -56,32 +66,37 @@
     </div>
 </section>
 
-<section class="py-20 border-t border-white/5 bg-white/[0.02]">
+<section class="py-20 lg:py-32 border-t border-white/5 bg-white/[0.02]">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="text-center mb-16">
+            <h2 class="text-3xl font-bold text-white sm:text-4xl">Built for Developers</h2>
+            <p class="mt-4 text-slate-400">Everything you need to build the next big job board.</p>
+        </div>
+
         <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
 
-            <div class="p-8 bg-white/5 border border-white/10 rounded-2xl hover:bg-white/10 hover:border-indigo-500/30 transition-all duration-300">
-                <div class="w-12 h-12 bg-indigo-500/20 rounded-lg flex items-center justify-center mb-6">
-                    <svg class="w-6 h-6 text-indigo-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+            <div class="group p-8 bg-white/5 border border-white/10 rounded-2xl hover:bg-white/10 hover:border-indigo-500/30 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-indigo-500/10">
+                <div class="w-14 h-14 bg-indigo-500/20 rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
+                    <svg class="w-7 h-7 text-indigo-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
                 </div>
                 <h3 class="text-xl font-bold text-white mb-3">Live Scraping</h3>
-                <p class="text-slate-400">Our engines scrape data in real-time if the cache is empty. You never get stale data.</p>
+                <p class="text-slate-400 leading-relaxed">Our engines scrape data in real-time if the cache is empty. You never get stale data.</p>
             </div>
 
-            <div class="p-8 bg-white/5 border border-white/10 rounded-2xl hover:bg-white/10 hover:border-cyan-500/30 transition-all duration-300">
-                <div class="w-12 h-12 bg-cyan-500/20 rounded-lg flex items-center justify-center mb-6">
-                    <svg class="w-6 h-6 text-cyan-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4"/></svg>
+            <div class="group p-8 bg-white/5 border border-white/10 rounded-2xl hover:bg-white/10 hover:border-cyan-500/30 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-cyan-500/10">
+                <div class="w-14 h-14 bg-cyan-500/20 rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
+                    <svg class="w-7 h-7 text-cyan-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4"/></svg>
                 </div>
                 <h3 class="text-xl font-bold text-white mb-3">Unified Schema</h3>
-                <p class="text-slate-400">LinkedIn, WWR, and RemoteOK data all normalized into one standard JSON format.</p>
+                <p class="text-slate-400 leading-relaxed">LinkedIn, WWR, and RemoteOK data all normalized into one standard JSON format.</p>
             </div>
 
-            <div class="p-8 bg-white/5 border border-white/10 rounded-2xl hover:bg-white/10 hover:border-purple-500/30 transition-all duration-300">
-                <div class="w-12 h-12 bg-purple-500/20 rounded-lg flex items-center justify-center mb-6">
-                    <svg class="w-6 h-6 text-purple-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+            <div class="group p-8 bg-white/5 border border-white/10 rounded-2xl hover:bg-white/10 hover:border-purple-500/30 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-purple-500/10">
+                <div class="w-14 h-14 bg-purple-500/20 rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
+                    <svg class="w-7 h-7 text-purple-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
                 </div>
                 <h3 class="text-xl font-bold text-white mb-3">Enterprise Security</h3>
-                <p class="text-slate-400">API Key authentication, rate limiting, and IP whitelisting included out of the box.</p>
+                <p class="text-slate-400 leading-relaxed">API Key authentication, rate limiting, and IP whitelisting included out of the box.</p>
             </div>
 
         </div>

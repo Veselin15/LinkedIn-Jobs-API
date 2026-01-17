@@ -38,41 +38,63 @@
 </head>
 <body class="text-slate-300 font-sans flex flex-col min-h-screen selection:bg-indigo-500 selection:text-white">
 
-<nav class="fixed w-full z-50 top-0 start-0 border-b border-white/10 bg-slate-900/80 backdrop-blur-md">
+<nav class="fixed w-full z-50 top-0 start-0 border-b border-white/10 bg-slate-900/90 backdrop-blur-md">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="flex justify-between h-16 items-center">
+        <div class="flex flex-wrap items-center justify-between py-4">
 
-            <div class="flex items-center gap-2">
+            <a href="/" class="flex items-center gap-2 z-50">
                 <span class="text-2xl">🚀</span>
-                <a href="/" class="text-xl font-bold text-white tracking-tight hover:text-indigo-400 transition-colors">
+                <span class="text-xl font-bold text-white tracking-tight hover:text-indigo-400 transition-colors">
                     JobsAPI
-                </a>
+                </span>
+            </a>
 
-                <div class="hidden md:flex ml-10 space-x-8">
-                    <a href="{% url 'job_list' %}" class="text-sm font-medium text-slate-300 hover:text-white hover:bg-white/5 px-3 py-2 rounded-md transition-all">Browse Jobs</a>
-                    <a href="{% url 'developer_guide' %}" class="text-sm font-medium text-slate-300 hover:text-white hover:bg-white/5 px-3 py-2 rounded-md transition-all">Documentation</a>
-                </div>
-            </div>
+            <button data-collapse-toggle="navbar-default" type="button" class="inline-flex items-center p-2 w-10 h-10 justify-center text-sm text-slate-400 rounded-lg md:hidden hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500" aria-controls="navbar-default" aria-expanded="false">
+                <span class="sr-only">Open main menu</span>
+                <svg class="w-5 h-5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 17 14">
+                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M1 1h15M1 7h15M1 13h15"/>
+                </svg>
+            </button>
 
-            <div class="flex items-center space-x-4">
-                {% if user.is_authenticated %}
-                    <a href="{% url 'dashboard' %}" class="hidden md:block text-sm font-medium text-slate-300 hover:text-white">Dashboard</a>
-                    <form method="post" action="{% url 'logout' %}">
-                        {% csrf_token %}
-                        <button type="submit" class="text-sm font-medium text-slate-400 hover:text-red-400 transition-colors">Logout</button>
-                    </form>
-                {% else %}
-                    <a href="{% url 'login' %}" class="text-sm font-medium text-slate-300 hover:text-white">Log In</a>
-                    <a href="{% url 'register' %}" class="px-4 py-2 text-sm font-bold text-white bg-indigo-600 rounded-lg hover:bg-indigo-500 shadow-lg shadow-indigo-500/20 transition-all">
-                        Get API Key
-                    </a>
-                {% endif %}
+            <div class="hidden w-full md:block md:w-auto" id="navbar-default">
+                <ul class="font-medium flex flex-col p-4 md:p-0 mt-4 border border-slate-700 rounded-lg bg-slate-800/50 md:flex-row md:items-center md:space-x-8 md:mt-0 md:border-0 md:bg-transparent">
+
+                    <li>
+                        <a href="{% url 'job_list' %}" class="block py-2 px-3 text-slate-300 rounded hover:bg-slate-700 md:hover:bg-transparent md:hover:text-white md:p-0 transition-colors">Browse Jobs</a>
+                    </li>
+                    <li>
+                        <a href="{% url 'developer_guide' %}" class="block py-2 px-3 text-slate-300 rounded hover:bg-slate-700 md:hover:bg-transparent md:hover:text-white md:p-0 transition-colors">Documentation</a>
+                    </li>
+
+                    <li class="md:hidden border-t border-slate-700 my-2"></li>
+
+                    {% if user.is_authenticated %}
+                        <li>
+                            <a href="{% url 'dashboard' %}" class="block py-2 px-3 text-slate-300 rounded hover:bg-slate-700 md:hover:bg-transparent md:hover:text-white md:p-0">Dashboard</a>
+                        </li>
+                        <li>
+                            <form method="post" action="{% url 'logout' %}" class="block md:inline">
+                                {% csrf_token %}
+                                <button type="submit" class="w-full text-left py-2 px-3 text-slate-400 rounded hover:bg-slate-700 hover:text-red-400 md:hover:bg-transparent md:p-0 transition-colors">Logout</button>
+                            </form>
+                        </li>
+                    {% else %}
+                        <li>
+                            <a href="{% url 'login' %}" class="block py-2 px-3 text-slate-300 rounded hover:bg-slate-700 md:hover:bg-transparent md:hover:text-white md:p-0">Log In</a>
+                        </li>
+                        <li class="mt-2 md:mt-0">
+                            <a href="{% url 'register' %}" class="block py-2 px-4 text-sm font-bold text-center text-white bg-indigo-600 rounded-lg hover:bg-indigo-500 shadow-lg shadow-indigo-500/20 transition-all md:inline-block">
+                                Get API Key
+                            </a>
+                        </li>
+                    {% endif %}
+                </ul>
             </div>
         </div>
     </div>
 </nav>
 
-<div class="h-16"></div>
+<div class="h-20"></div>
 
 <main class="flex-grow relative z-10">
     {% block content %}{% endblock %}
