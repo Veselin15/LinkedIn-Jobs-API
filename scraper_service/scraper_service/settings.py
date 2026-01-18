@@ -65,12 +65,11 @@ CONCURRENT_REQUESTS_PER_DOMAIN = 1
 # Enable or disable downloader middlewares
 # See https://docs.scrapy.org/en/latest/topics/downloader-middleware.html
 DOWNLOADER_MIDDLEWARES = {
-    # 1. Disable the default UserAgent middleware (set to None)
-    'scrapy.downloadermiddlewares.useragent.UserAgentMiddleware': None,
-
-    # 2. Enable the Random UserAgent middleware (set priority to 400)
-    'scrapy_user_agents.middlewares.RandomUserAgentMiddleware': 400,
+    # 1. ENABLE the default UserAgent middleware (so it uses the one defined in settings)
     'scrapy.downloadermiddlewares.useragent.UserAgentMiddleware': 400,
+
+    # 2. DISABLE the RandomUserAgent middleware (It gives you bad, old agents)
+    'scrapy_user_agents.middlewares.RandomUserAgentMiddleware': None,
 }
 
 # Enable or disable extensions
