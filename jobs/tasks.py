@@ -45,17 +45,15 @@ def run_bulk_scrape():
     """
     results = []
 
-    # --- PART 1: We Work Remotely (The Safety Net) ---
-    # This is an RSS feed, so it's very fast and safe to run often.
-    print("🚀 [Bulk] Starting WeWorkRemotely Scrape...")
-    subprocess.run([
-        "scrapy", "crawl", "wwr"
-    ], cwd="/app/scraper_service")
-    results.append("WeWorkRemotely")
-
-    # Inside run_bulk_scrape
+    # 1. Existing Scrapers...
+    subprocess.run(["scrapy", "crawl", "wwr"], cwd="/app/scraper_service")
     subprocess.run(["scrapy", "crawl", "remoteok"], cwd="/app/scraper_service")
-    results.append("RemoteOK")
+
+    # 2. NEW: Glassdoor
+    print("🚀 [Bulk] Starting Glassdoor Scrape...")
+    # Warning: This might fail if Glassdoor blocks the IP
+    subprocess.run(["scrapy", "crawl", "glassdoor"], cwd="/app/scraper_service")
+    results.append("Glassdoor")
 
     # --- PART 2: LinkedIn (The Heavy Lifter) ---
     # We loop through popular keywords to build a rich database.
