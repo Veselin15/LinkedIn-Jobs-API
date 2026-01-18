@@ -7,7 +7,7 @@
 
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.2.1/flowbite.min.css" rel="stylesheet" />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.2.1/flowbite.min.css" rel="stylesheet"/>
     <script src="https://unpkg.com/htmx.org@1.9.10"></script>
 
     <script>
@@ -15,7 +15,7 @@
             darkMode: 'class',
             theme: {
                 extend: {
-                    fontFamily: { sans: ['Inter', 'sans-serif'] },
+                    fontFamily: {sans: ['Inter', 'sans-serif']},
                     colors: {
                         // Using standard Slate but avoiding the super dark 950
                     }
@@ -23,17 +23,37 @@
             }
         }
     </script>
+    <script type="application/ld+json">
+        {
+          "@context": "https://schema.org",
+          "@type": "Organization",
+          "name": "TechJobsData",
+          "url": "https://techjobsdata.com",
+          "logo": "https://techjobsdata.com/static/img/logo.png",
+          "sameAs": [
+            "https://www.linkedin.com/company/techjobsdata",
+            "https://github.com/techjobsdata"
+          ],
+          "contactPoint": {
+            "@type": "ContactPoint",
+            "email": "support@techjobsdata.com",
+            "contactType": "customer support"
+          }
+        }
+    </script>
     <style>
         /* Twilight Grid Background */
         body {
             background-color: #0f172a;
-            background-image:
-                radial-gradient(circle at 50% 0%, #1e293b 0%, transparent 70%),
-                linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+            background-image: radial-gradient(circle at 50% 0%, #1e293b 0%, transparent 70%),
+            linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
             background-size: 100% 100%, 40px 40px, 40px 40px;
         }
-        html { scroll-behavior: smooth; }
+
+        html {
+            scroll-behavior: smooth;
+        }
     </style>
 </head>
 <body class="text-slate-300 font-sans flex flex-col min-h-screen selection:bg-indigo-500 selection:text-white">
@@ -49,10 +69,14 @@
                 </span>
             </a>
 
-            <button data-collapse-toggle="navbar-default" type="button" class="inline-flex items-center p-2 w-10 h-10 justify-center text-sm text-slate-400 rounded-lg md:hidden hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500" aria-controls="navbar-default" aria-expanded="false">
+            <button data-collapse-toggle="navbar-default" type="button"
+                    class="inline-flex items-center p-2 w-10 h-10 justify-center text-sm text-slate-400 rounded-lg md:hidden hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    aria-controls="navbar-default" aria-expanded="false">
                 <span class="sr-only">Open main menu</span>
-                <svg class="w-5 h-5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 17 14">
-                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M1 1h15M1 7h15M1 13h15"/>
+                <svg class="w-5 h-5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none"
+                     viewBox="0 0 17 14">
+                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M1 1h15M1 7h15M1 13h15"/>
                 </svg>
             </button>
 
@@ -60,30 +84,40 @@
                 <ul class="font-medium flex flex-col p-4 md:p-0 mt-4 border border-slate-700 rounded-lg bg-slate-800/50 md:flex-row md:items-center md:space-x-8 md:mt-0 md:border-0 md:bg-transparent">
 
                     <li>
-                        <a href="{% url 'job_list' %}" class="block py-2 px-3 text-slate-300 rounded hover:bg-slate-700 md:hover:bg-transparent md:hover:text-white md:p-0 transition-colors">Browse Jobs</a>
+                        <a href="{% url 'job_list' %}"
+                           class="block py-2 px-3 text-slate-300 rounded hover:bg-slate-700 md:hover:bg-transparent md:hover:text-white md:p-0 transition-colors">Browse
+                            Jobs</a>
                     </li>
                     <li>
-                        <a href="{% url 'developer_guide' %}" class="block py-2 px-3 text-slate-300 rounded hover:bg-slate-700 md:hover:bg-transparent md:hover:text-white md:p-0 transition-colors">Documentation</a>
+                        <a href="{% url 'developer_guide' %}"
+                           class="block py-2 px-3 text-slate-300 rounded hover:bg-slate-700 md:hover:bg-transparent md:hover:text-white md:p-0 transition-colors">Documentation</a>
                     </li>
 
                     <li class="md:hidden border-t border-slate-700 my-2"></li>
 
                     {% if user.is_authenticated %}
                         <li>
-                            <a href="{% url 'dashboard' %}" class="block py-2 px-3 text-slate-300 rounded hover:bg-slate-700 md:hover:bg-transparent md:hover:text-white md:p-0">Dashboard</a>
+                            <a href="{% url 'dashboard' %}"
+                               class="block py-2 px-3 text-slate-300 rounded hover:bg-slate-700 md:hover:bg-transparent md:hover:text-white md:p-0">Dashboard</a>
                         </li>
                         <li>
                             <form method="post" action="{% url 'logout' %}" class="block md:inline">
                                 {% csrf_token %}
-                                <button type="submit" class="w-full text-left py-2 px-3 text-slate-400 rounded hover:bg-slate-700 hover:text-red-400 md:hover:bg-transparent md:p-0 transition-colors">Logout</button>
+                                <button type="submit"
+                                        class="w-full text-left py-2 px-3 text-slate-400 rounded hover:bg-slate-700 hover:text-red-400 md:hover:bg-transparent md:p-0 transition-colors">
+                                    Logout
+                                </button>
                             </form>
                         </li>
                     {% else %}
                         <li>
-                            <a href="{% url 'login' %}" class="block py-2 px-3 text-slate-300 rounded hover:bg-slate-700 md:hover:bg-transparent md:hover:text-white md:p-0">Log In</a>
+                            <a href="{% url 'login' %}"
+                               class="block py-2 px-3 text-slate-300 rounded hover:bg-slate-700 md:hover:bg-transparent md:hover:text-white md:p-0">Log
+                                In</a>
                         </li>
                         <li class="mt-2 md:mt-0">
-                            <a href="{% url 'register' %}" class="block py-2 px-4 text-sm font-bold text-center text-white bg-indigo-600 rounded-lg hover:bg-indigo-500 shadow-lg shadow-indigo-500/20 transition-all md:inline-block">
+                            <a href="{% url 'register' %}"
+                               class="block py-2 px-4 text-sm font-bold text-center text-white bg-indigo-600 rounded-lg hover:bg-indigo-500 shadow-lg shadow-indigo-500/20 transition-all md:inline-block">
                                 Get API Key
                             </a>
                         </li>
