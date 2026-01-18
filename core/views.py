@@ -1,12 +1,13 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from rest_framework_api_key.models import APIKey
-from jobs.models import Job
 from django.contrib.auth import login as auth_login
 from django.core.paginator import Paginator
 from django.db.models import Q
 from django.contrib import messages
 from .forms import EmailRequiredSignupForm
+from django.shortcuts import render, get_object_or_404
+from jobs.models import Job
 
 def index(request):
     """The Landing Page (Public)"""
@@ -132,3 +133,11 @@ def developer_guide(request):
         'api_url': 'http://localhost:8000/api/jobs/',
     }
     return render(request, 'core/developer_guide.html', context)
+
+def job_detail(request, pk):
+    """
+    Landing page for a specific job.
+    Great for SEO and for users sharing links.
+    """
+    job = get_object_or_404(Job, pk=pk)
+    return render(request, 'core/job_detail.html', {'job': job})

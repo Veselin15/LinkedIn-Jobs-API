@@ -38,6 +38,8 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django_filters',
+    'django.contrib.sites',
+    'django.contrib.sitemaps',
     # Third-party apps
     'rest_framework',
     'rest_framework_api_key',
@@ -201,3 +203,5 @@ DEFAULT_FROM_EMAIL = 'noreply@remotejobsapi.com'
 
 LOGIN_REDIRECT_URL = '/dashboard/'
 LOGOUT_REDIRECT_URL = '/'
+
+SITE_ID = 1

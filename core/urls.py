@@ -8,4 +8,5 @@ urlpatterns = [
     path('jobs/', views.job_list, name='job_list'),
     path('regenerate-key/', views.regenerate_api_key, name='regenerate_api_key'),
     path('developers/', views.developer_guide, name='developer_guide'),
+    path('job/<int:pk>/', views.job_detail, name='job_detail'),
 ]
