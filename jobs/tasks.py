@@ -90,6 +90,7 @@ def run_bulk_scrape():
     # --- PART 2: The "Hard" Scrapers ---
     # Glassdoor often blocks IPs, so we treat it carefully
     run_spider("glassdoor", timeout=180)
+    run_spider("indeed", timeout=180)
 
     # --- PART 3: LinkedIn (The Heavy Lifter) ---
     tech_stack = ["Python", "JavaScript", "React", "DevOps", "Data", "C#", "Java"]
