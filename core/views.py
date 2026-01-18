@@ -1,89 +1,72 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
-from rest_framework_api_key.models import APIKey
-from django.contrib.auth import login as auth_login
+from django.views.decorators.http import require_POST
+from django.contrib.auth import login
+from django.contrib import messages
+from django.http import HttpResponse
 from django.core.paginator import Paginator
 from django.db.models import Q
-from django.contrib import messages
-from .forms import EmailRequiredSignupForm
-from django.shortcuts import render, get_object_or_404
+from rest_framework_api_key.models import APIKey
+
+from .forms import RegisterForm  # Assuming you renamed your form or use the one from before
+from .models import JobAlert, SavedJob
 from jobs.models import Job
-from django.views.decorators.http import require_POST
-from .models import SavedJob
+
+
+# --- 1. Main Pages ---
+
 def index(request):
     """The Landing Page (Public)"""
-    # Show stats to impress visitors
     job_count = Job.objects.count()
     return render(request, 'core/index.html', {'job_count': job_count})
 
-@login_required
-def dashboard(request):
-    """
-    The Money Page.
-    Users manage their subscription and keys here.
-    """
-    # 1. Check for API Key
-    api_key = APIKey.objects.filter(name=request.user.email).first()
 
-    if api_key:
-        has_key = True
-        key_prefix = api_key.prefix
+def developer_guide(request):
+    """Static page for API documentation."""
+    context = {}
+
+    # Generate the absolute API URL for the docs
+    context['api_url'] = request.build_absolute_uri('/api/v1/jobs/')
+
+    if request.user.is_authenticated:
+        # Try to find an existing key to show the prefix
+        # We use "user-{id}" naming convention for uniqueness
+        api_key = APIKey.objects.filter(name=f"user-{request.user.id}").first()
+
+        context['has_key'] = api_key is not None
+        context['key_prefix'] = api_key.prefix if api_key else "YOUR_PREFIX"
     else:
-        has_key = False
-        key_prefix = None
+        # Default placeholder for guests
+        context['has_key'] = False
+        context['key_prefix'] = "YOUR_API_KEY"
 
-    # 2. Logic for "Premium" status
-    is_premium = has_key
-    daily_limit = 1000 if is_premium else 10
-    saved_jobs = request.user.saved_jobs.select_related('job').order_by('-created_at')
-    context = {
-        'has_key': has_key,
-        'key_prefix': key_prefix,
-        'limit': daily_limit,
-        'is_premium': is_premium,
-        'api_url': 'http://localhost:8000/api/jobs/',
-        'saved_jobs': saved_jobs,
-    }
-    return render(request, 'core/dashboard.html', context)
+    return render(request, 'core/developer_guide.html', context)
 
+
+# --- 2. Authentication ---
 
 def register(request):
-    """Handles User Registration with Email"""
+    """Handles User Registration"""
     if request.method == 'POST':
-        form = EmailRequiredSignupForm(request.POST)
+        # Ensure you import the correct form class here
+        # If your form is named 'EmailRequiredSignupForm', use that.
+        form = RegisterForm(request.POST)
         if form.is_valid():
             user = form.save()
-            auth_login(request, user)
+            login(request, user)
+            messages.success(request, "Account created successfully! Welcome to the dashboard.")
             return redirect('dashboard')
     else:
-        form = EmailRequiredSignupForm()
-
+        form = RegisterForm()
     return render(request, 'registration/register.html', {'form': form})
 
-@login_required
-@require_POST
-def toggle_save_job(request, job_id):
-    job = get_object_or_404(Job, pk=job_id)
-    saved_item, created = SavedJob.objects.get_or_create(user=request.user, job=job)
 
-    if not created:
-        # If it already existed, DELETE it (Unsave)
-        saved_item.delete()
-        is_saved = False
-    else:
-        # If it was created, keep it (Save)
-        is_saved = True
+# --- 3. Job Board Logic ---
 
-    # Render just the Star Icon (swapped by HTMX)
-    return render(request, 'core/partials/save_icon.html', {'job': job, 'is_saved': is_saved})
 def job_list(request):
     """
-    Public Job Board.
-    - Logged In: Unlimited Views
-    - Anonymous: Unlimited Views (Paywall removed)
+    Searchable, paginated job board with 'Saved' status checking.
     """
-
-    # --- STANDARD JOB FETCHING ---
     query = request.GET.get('q', '')
     location = request.GET.get('loc', '')
 
@@ -95,70 +78,131 @@ def job_list(request):
             Q(skills__icontains=query) |
             Q(company__icontains=query)
         )
-
     if location:
         jobs = jobs.filter(location__icontains=location)
 
     paginator = Paginator(jobs, 20)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
+
+    # Get IDs of jobs saved by this user (efficient lookup)
     saved_job_ids = []
     if request.user.is_authenticated:
-        saved_job_ids = list(request.user.saved_jobs.values_list('job_id', flat=True))
+        saved_job_ids = list(SavedJob.objects.filter(user=request.user).values_list('job_id', flat=True))
 
     context = {
         'page_obj': page_obj,
         'query': query,
         'location': location,
-        'saved_job_ids': saved_job_ids,  # <--- Pass this to template
+        'saved_job_ids': saved_job_ids,
     }
 
+    # If this is an HTMX request (pagination or search), render just the results
     if request.headers.get('HX-Request'):
         return render(request, 'core/partials/job_results.html', context)
 
     return render(request, 'core/job_list.html', context)
 
 
+def job_detail(request, pk):
+    """SEO landing page for a single job."""
+    job = get_object_or_404(Job, pk=pk)
+    return render(request, 'core/job_detail.html', {'job': job})
+
+
+# --- 4. User Dashboard & API Keys ---
+
 @login_required
+def dashboard(request):
+    """
+    The Money Page. Users manage their subscription and keys here.
+    """
+    # 1. Get API Key info (using user ID for consistent naming)
+    api_key = APIKey.objects.filter(name=f"user-{request.user.id}").first()
+
+    # 2. Mock "Premium" status (In reality, check a 'Subscription' model)
+    # For now, if they have an API key, we treat them as "Premium/Developer"
+    is_premium = api_key is not None
+
+    # 3. Get Saved Jobs
+    saved_jobs = SavedJob.objects.filter(user=request.user).select_related('job').order_by('-created_at')
+
+    context = {
+        'api_key': api_key,
+        'has_key': api_key is not None,
+        'key_prefix': api_key.prefix if api_key else None,
+        'is_premium': is_premium,
+        'saved_jobs': saved_jobs,
+    }
+    return render(request, 'core/dashboard.html', context)
+
+
+@login_required
+@require_POST
 def regenerate_api_key(request):
     """
-    Allows a Premium user to revoke their old key and get a new one.
+    Allows a user to revoke their old key and get a new one.
     """
-    if request.method == 'POST':
-        try:
-            old_key = APIKey.objects.get(name=request.user.email)
-            old_key.delete()
-        except APIKey.DoesNotExist:
-            messages.error(request, "No active subscription found.")
-            return redirect('dashboard')
+    # Delete old key
+    APIKey.objects.filter(name=f"user-{request.user.id}").delete()
 
-        api_key, key_string = APIKey.objects.create_key(name=request.user.email)
-        messages.success(request, f"Your new API Key is: {key_string}")
-        messages.warning(request, "Please copy this key now. You will not be able to see it again!")
+    # Create new key
+    api_key, key_string = APIKey.objects.create_key(name=f"user-{request.user.id}")
 
-        return redirect('dashboard')
-
+    # Using Django Messages to show the key ONCE
+    messages.success(request, f"New API Key generated! Save it now: {key_string}")
     return redirect('dashboard')
 
 
+# --- 5. Interactive Features (HTMX) ---
+
 @login_required
-def developer_guide(request):
+@require_POST
+def toggle_save_job(request, job_id):
     """
-    The 'Developer Portal' page.
+    Toggles the saved state of a job.
+    Called via HTMX.
     """
-    api_key = APIKey.objects.filter(name=request.user.email).first()
+    job = get_object_or_404(Job, pk=job_id)
+    saved_item, created = SavedJob.objects.get_or_create(user=request.user, job=job)
 
-    context = {
-        'has_key': bool(api_key),
-        'key_prefix': api_key.prefix if api_key else "YOUR_API_KEY",
-        'api_url': 'http://localhost:8000/api/jobs/',
-    }
-    return render(request, 'core/developer_guide.html', context)
+    if not created:
+        # If it existed, delete it (Unsave)
+        saved_item.delete()
+        is_saved = False
+    else:
+        # It was just created (Save)
+        is_saved = True
 
-def job_detail(request, pk):
+    # Render the button component with the new state
+    return render(request, 'core/partials/save_icon.html', {'job': job, 'is_saved': is_saved})
+
+
+@require_POST
+def subscribe_alert(request):
     """
-    Landing page for a specific job.
-    Great for SEO and for users sharing links.
+    Creates a JobAlert. This fixes the 'AttributeError'.
     """
-    job = get_object_or_404(Job, pk=pk)
-    return render(request, 'core/job_detail.html', {'job': job})
+    email = request.POST.get('email')
+    keyword = request.POST.get('keyword') or 'all jobs'
+    location = request.POST.get('location') or ''
+
+    if email:
+        JobAlert.objects.get_or_create(
+            email=email,
+            keyword=keyword,
+            location=location
+        )
+
+    # Return a beautiful success message to replace the form
+    return HttpResponse(f"""
+        <div class="p-4 bg-green-500/10 border border-green-500/20 rounded-xl flex items-center gap-3 animate-fade-in-up">
+            <div class="p-1.5 bg-green-500/20 rounded-full text-green-400">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+            </div>
+            <div>
+                <p class="text-sm font-bold text-green-400">Alert Active!</p>
+                <p class="text-xs text-green-300/70">We'll email you when new {keyword} jobs appear.</p>
+            </div>
+        </div>
+    """)
