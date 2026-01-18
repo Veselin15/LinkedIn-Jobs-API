@@ -1,8 +1,12 @@
-from celery import shared_task
+import logging
 import subprocess
+from celery import shared_task
 from datetime import timedelta
 from django.utils import timezone
 from .models import Job
+
+# Get an instance of a logger
+logger = logging.getLogger(__name__)
 
 
 @shared_task
@@ -13,26 +17,40 @@ def run_scrapers(keyword='Python', location='Europe'):
     """
     results = []
 
-    # 1. Run We Work Remotely (Fast & Reliable - 2 seconds)
-    print(f"🚀 [On-Demand] Starting WWR Scrape...")
-    subprocess.run([
-        "scrapy", "crawl", "wwr"
-    ], cwd="/app/scraper_service")
-    results.append("WWR")
-
-    # 2. Run LinkedIn (Targeted Search - 20-30 seconds)
+    # 1. We Work Remotely (Fast & Reliable)
     try:
-        print(f"🔍 [On-Demand] Starting LinkedIn Scrape for {keyword}...")
-        subprocess.run([
-            "scrapy", "crawl", "linkedin",
-            "-a", f"keyword={keyword}",
-            "-a", f"location={location}"
-        ], cwd="/app/scraper_service", timeout=120)  # <--- Hard limit 2 minutes
+        logger.info(f"🚀 [On-Demand] Starting WWR Scrape...")
+        subprocess.run(
+            ["scrapy", "crawl", "wwr"],
+            cwd="/app/scraper_service",
+            check=True,
+            timeout=60
+        )
+        results.append("WWR")
+    except subprocess.CalledProcessError:
+        logger.error("❌ [On-Demand] WWR Scraper Failed")
+    except subprocess.TimeoutExpired:
+        logger.error("⚠️ [On-Demand] WWR Scraper Timed Out")
+
+    # 2. LinkedIn (Targeted Search)
+    try:
+        logger.info(f"🔍 [On-Demand] Starting LinkedIn Scrape for {keyword}...")
+        subprocess.run(
+            [
+                "scrapy", "crawl", "linkedin",
+                "-a", f"keyword={keyword}",
+                "-a", f"location={location}"
+            ],
+            cwd="/app/scraper_service",
+            timeout=180,  # 3 minutes hard limit
+            check=True
+        )
         results.append("LinkedIn")
     except subprocess.TimeoutExpired:
-        print(f"⚠️ Scrape for {keyword} timed out! Killing process.")
-        # Subprocess is killed automatically by the exception, but we log it.
-        return "Scrape Timed Out"
+        logger.warning(f"⚠️ Scrape for {keyword} timed out! Process killed.")
+        return "LinkedIn Scrape Timed Out"
+    except Exception as e:
+        logger.error(f"❌ LinkedIn Scrape Failed: {str(e)}")
 
     return f"Scraping Finished. Sources: {', '.join(results)}"
 
@@ -45,48 +63,72 @@ def run_bulk_scrape():
     """
     results = []
 
-    # 1. Existing Scrapers...
-    subprocess.run(["scrapy", "crawl", "wwr"], cwd="/app/scraper_service")
-    subprocess.run(["scrapy", "crawl", "remoteok"], cwd="/app/scraper_service")
+    # Define a helper to run scrapers safely
+    def run_spider(spider_name, timeout=120):
+        try:
+            logger.info(f"🚀 [Bulk] Starting {spider_name}...")
+            subprocess.run(
+                ["scrapy", "crawl", spider_name],
+                cwd="/app/scraper_service",
+                timeout=timeout,
+                check=True,
+                stdout=subprocess.PIPE,  # Capture output to avoid log spam
+                stderr=subprocess.PIPE
+            )
+            results.append(spider_name)
+            logger.info(f"✅ [Bulk] {spider_name} Finished")
+        except subprocess.TimeoutExpired:
+            logger.error(f"⚠️ [Bulk] {spider_name} Timed Out")
+        except subprocess.CalledProcessError as e:
+            logger.error(f"❌ [Bulk] {spider_name} Failed: {e.stderr.decode()}")
 
-    # 2. NEW: Glassdoor
-    print("🚀 [Bulk] Starting Glassdoor Scrape...")
-    # Warning: This might fail if Glassdoor blocks the IP
-    subprocess.run(["scrapy", "crawl", "glassdoor"], cwd="/app/scraper_service")
-    results.append("Glassdoor")
+    # --- PART 1: The Fast/API Scrapers ---
+    run_spider("wwr")
+    run_spider("remoteok")
+    run_spider("pyjobs")  # Added this since it exists in your project
 
-    # --- PART 2: LinkedIn (The Heavy Lifter) ---
-    # We loop through popular keywords to build a rich database.
-    # Note: Keep this list focused to avoid hitting LinkedIn rate limits.
-    tech_stack = ["Python", "JavaScript", "React", "DevOps", "Data", "C++", "C#", ".NET", "Java", "PHP"]
-    regions = ["Remote", "Europe", "United States", "United Kingdom", "Australia", "Canada"]
+    # --- PART 2: The "Hard" Scrapers ---
+    # Glassdoor often blocks IPs, so we treat it carefully
+    run_spider("glassdoor", timeout=180)
+
+    # --- PART 3: LinkedIn (The Heavy Lifter) ---
+    tech_stack = ["Python", "JavaScript", "React", "DevOps", "Data", "C#", "Java"]
+    regions = ["Remote", "Europe", "United States"]
 
     for tech in tech_stack:
         for region in regions:
-            print(f"🔎 [Bulk] LinkedIn Scrape: {tech} - {region}")
+            task_name = f"LI:{tech}-{region}"
+            try:
+                logger.info(f"🔎 [Bulk] LinkedIn: {tech} in {region}")
+                subprocess.run(
+                    [
+                        "scrapy", "crawl", "linkedin",
+                        "-a", f"keyword={tech}",
+                        "-a", f"location={region}"
+                    ],
+                    cwd="/app/scraper_service",
+                    timeout=120,
+                    check=True,
+                    stdout=subprocess.DEVNULL,  # Silence standard output
+                    stderr=subprocess.PIPE  # Capture errors only
+                )
+                results.append(task_name)
+            except Exception as e:
+                logger.error(f"❌ Failed {task_name}: {e}")
 
-            # We wait for each process to finish before starting the next
-            # This acts as a natural rate-limiter.
-            subprocess.run([
-                "scrapy", "crawl", "linkedin",
-                "-a", f"keyword={tech}",
-                "-a", f"location={region}"
-            ], cwd="/app/scraper_service")
-
-            results.append(f"LI:{tech}-{region}")
-
-    return f"Bulk Scrape Complete. Covered: {', '.join(results)}"
+    final_report = f"Bulk Scrape Complete. Covered: {', '.join(results)}"
+    logger.info(final_report)
+    return final_report
 
 
 @shared_task
 def cleanup_old_jobs():
     """
     Janitor Task: Deletes jobs posted more than 30 days ago.
-    Keeps the database fresh and fast.
     """
     cutoff_date = timezone.now().date() - timedelta(days=30)
-
-    # The _ is strictly standard variable naming for "ignored return value"
     deleted_count, _ = Job.objects.filter(posted_at__lt=cutoff_date).delete()
 
-    return f"Janitor Report: Deleted {deleted_count} jobs older than {cutoff_date}"
+    msg = f"🧹 Janitor: Deleted {deleted_count} jobs older than {cutoff_date}"
+    logger.info(msg)
+    return msg
