@@ -9,4 +9,5 @@ urlpatterns = [
     path('regenerate-key/', views.regenerate_api_key, name='regenerate_api_key'),
     path('developers/', views.developer_guide, name='developer_guide'),
     path('job/<int:pk>/', views.job_detail, name='job_detail'),
+    path('toggle-save/<int:job_id>/', views.toggle_save_job, name='toggle_save_job'),
 ]

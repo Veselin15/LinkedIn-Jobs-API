@@ -8,7 +8,8 @@ from django.contrib import messages
 from .forms import EmailRequiredSignupForm
 from django.shortcuts import render, get_object_or_404
 from jobs.models import Job
-
+from django.views.decorators.http import require_POST
+from .models import SavedJob
 def index(request):
     """The Landing Page (Public)"""
     # Show stats to impress visitors
@@ -34,13 +35,14 @@ def dashboard(request):
     # 2. Logic for "Premium" status
     is_premium = has_key
     daily_limit = 1000 if is_premium else 10
-
+    saved_jobs = request.user.saved_jobs.select_related('job').order_by('-created_at')
     context = {
         'has_key': has_key,
         'key_prefix': key_prefix,
         'limit': daily_limit,
         'is_premium': is_premium,
-        'api_url': 'http://localhost:8000/api/jobs/' # Or your real domain
+        'api_url': 'http://localhost:8000/api/jobs/',
+        'saved_jobs': saved_jobs,
     }
     return render(request, 'core/dashboard.html', context)
 
@@ -58,7 +60,22 @@ def register(request):
 
     return render(request, 'registration/register.html', {'form': form})
 
+@login_required
+@require_POST
+def toggle_save_job(request, job_id):
+    job = get_object_or_404(Job, pk=job_id)
+    saved_item, created = SavedJob.objects.get_or_create(user=request.user, job=job)
 
+    if not created:
+        # If it already existed, DELETE it (Unsave)
+        saved_item.delete()
+        is_saved = False
+    else:
+        # If it was created, keep it (Save)
+        is_saved = True
+
+    # Render just the Star Icon (swapped by HTMX)
+    return render(request, 'core/partials/save_icon.html', {'job': job, 'is_saved': is_saved})
 def job_list(request):
     """
     Public Job Board.
@@ -85,11 +102,15 @@ def job_list(request):
     paginator = Paginator(jobs, 20)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
+    saved_job_ids = []
+    if request.user.is_authenticated:
+        saved_job_ids = list(request.user.saved_jobs.values_list('job_id', flat=True))
 
     context = {
         'page_obj': page_obj,
         'query': query,
-        'location': location
+        'location': location,
+        'saved_job_ids': saved_job_ids,  # <--- Pass this to template
     }
 
     if request.headers.get('HX-Request'):
