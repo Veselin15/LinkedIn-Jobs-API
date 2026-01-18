@@ -26,7 +26,10 @@ SECRET_KEY = 'django-insecure-ylqj0n6h7a!r(pxp#tha&_=wifp5em=-s3i+2r2e3i0q$ud(f9
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = os.environ.get("ALLOWED_HOSTS", "localhost,127.0.0.1").split(",")
+if DEBUG:
+    ALLOWED_HOSTS = ["*"]  # 🟢 Allow everything in Dev (Fixes your error)
+else:
+    ALLOWED_HOSTS = os.environ.get("ALLOWED_HOSTS", "techjobsdata.com").split(",")
 SITE_URL = 'https://techjobsdata.com'
 # Application definition
 
