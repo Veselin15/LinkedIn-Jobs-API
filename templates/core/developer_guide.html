@@ -1,177 +1,281 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<div class="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8 relative">
+<style>
+    /* Custom Scrollbar for Code Blocks */
+    .code-scrollbar::-webkit-scrollbar {
+        height: 8px;
+        width: 8px;
+    }
+    .code-scrollbar::-webkit-scrollbar-track {
+        background: rgba(0, 0, 0, 0.2);
+    }
+    .code-scrollbar::-webkit-scrollbar-thumb {
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 4px;
+    }
+    .code-scrollbar::-webkit-scrollbar-thumb:hover {
+        background: rgba(255, 255, 255, 0.2);
+    }
+</style>
 
-    <div class="absolute top-0 right-0 w-96 h-96 bg-indigo-500/10 blur-[120px] rounded-full pointer-events-none"></div>
+<div class="relative min-h-screen pt-12 pb-24">
 
-    <div class="text-center mb-16 relative z-10">
-        <h1 class="text-4xl font-extrabold tracking-tight text-white sm:text-5xl">
-            Developer <span class="text-indigo-400">Documentation</span>
-        </h1>
-        <p class="mt-4 text-xl text-slate-400 max-w-2xl mx-auto">
-            Integrate real-time job data into your applications in seconds using our REST API.
-        </p>
-    </div>
+    <div class="absolute top-0 left-1/4 w-96 h-96 bg-indigo-500/10 blur-[100px] rounded-full pointer-events-none mix-blend-screen"></div>
+    <div class="absolute top-0 right-1/4 w-96 h-96 bg-cyan-500/10 blur-[100px] rounded-full pointer-events-none"></div>
 
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 relative z-10">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
 
-        <div class="lg:col-span-1 space-y-6">
-            <div class="p-6 bg-white/5 border border-white/10 rounded-2xl shadow-xl backdrop-blur-sm">
-                <div class="flex items-center gap-3 mb-4">
-                    <div class="p-2 bg-indigo-500/20 rounded-lg text-indigo-400">
-                        <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
-                    </div>
-                    <h3 class="text-lg font-bold text-white">Authentication</h3>
-                </div>
-
-                <p class="text-slate-400 text-sm mb-4 leading-relaxed">
-                    Choose your connection method based on your plan.
-                </p>
-
-                {% if has_key %}
-                    <div class="p-4 bg-green-500/10 border border-green-500/20 rounded-xl">
-                        <div class="flex items-start gap-3">
-                            <svg class="w-5 h-5 text-green-400 mt-0.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                            <div>
-                                <h4 class="text-sm font-bold text-green-400">Premium Active</h4>
-                                <p class="text-xs text-green-300/80 mt-1">Use your API Key for high limits (1,000 req/day).</p>
-                            </div>
-                        </div>
-                    </div>
-                {% else %}
-                    <div class="p-4 bg-slate-700/50 border border-slate-600 rounded-xl">
-                        <div class="flex items-start gap-3">
-                            <svg class="w-5 h-5 text-slate-400 mt-0.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
-                            <div>
-                                <h4 class="text-sm font-bold text-white">Free Tier Mode</h4>
-                                <p class="text-xs text-slate-400 mt-1">
-                                    No Authentication required. <br>
-                                    Limited to 10 requests/day by IP.
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-                {% endif %}
-            </div>
-
-            <div class="p-6 bg-white/5 border border-white/10 rounded-2xl shadow-xl backdrop-blur-sm">
-                <h3 class="text-lg font-bold text-white mb-4">Query Parameters</h3>
-                <ul class="space-y-3">
-                    <li class="flex flex-col">
-                        <code class="text-xs font-mono text-cyan-300 bg-cyan-900/20 w-fit px-2 py-1 rounded mb-1">search</code>
-                        <span class="text-slate-400 text-xs">Filter by title or skill (e.g. "Python")</span>
-                    </li>
-                    <li class="flex flex-col">
-                        <code class="text-xs font-mono text-cyan-300 bg-cyan-900/20 w-fit px-2 py-1 rounded mb-1">location</code>
-                        <span class="text-slate-400 text-xs">Filter by region (e.g. "Europe")</span>
-                    </li>
-                </ul>
-            </div>
+        <div class="text-center mb-16">
+            <h1 class="text-4xl font-extrabold tracking-tight text-white sm:text-5xl">
+                Developer <span class="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-cyan-400">Documentation</span>
+            </h1>
+            <p class="mt-4 text-xl text-slate-400 max-w-2xl mx-auto leading-relaxed">
+                Integrate real-time job data into your applications in seconds using the <strong>TechJobsData API</strong>.
+            </p>
         </div>
 
-        <div class="lg:col-span-2">
-            <div class="w-full bg-slate-900 border border-white/10 rounded-2xl overflow-hidden shadow-2xl">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
 
-                <div class="flex border-b border-white/10 bg-white/5">
-                    <ul class="flex flex-wrap -mb-px text-sm font-medium text-center" id="defaultTab" data-tabs-toggle="#defaultTabContent" role="tablist">
-                        <li class="me-2" role="presentation">
-                            <button class="inline-block p-4 border-b-2 rounded-t-lg hover:text-indigo-300 hover:border-indigo-300/30 text-indigo-400 border-indigo-400 bg-white/5" id="curl-tab" data-tabs-target="#curl" type="button" role="tab" aria-controls="curl" aria-selected="true">
-                                cURL
-                            </button>
+            <div class="lg:col-span-4 space-y-6 lg:sticky lg:top-24">
+
+                <div class="bg-slate-900/60 border border-white/10 rounded-2xl p-6 shadow-xl backdrop-blur-sm">
+                    <div class="flex items-center gap-3 mb-4">
+                        <div class="p-2 bg-indigo-500/10 rounded-lg text-indigo-400 border border-indigo-500/20">
+                            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"/></svg>
+                        </div>
+                        <h3 class="text-lg font-bold text-white">Authentication</h3>
+                    </div>
+
+                    <p class="text-slate-400 text-sm mb-4">
+                        Your current access level:
+                    </p>
+
+                    {% if has_key %}
+                        <div class="p-4 bg-green-500/10 border border-green-500/20 rounded-xl relative overflow-hidden group">
+                            <div class="absolute inset-0 bg-green-500/5 group-hover:bg-green-500/10 transition-colors"></div>
+                            <div class="relative flex items-start gap-3">
+                                <svg class="w-5 h-5 text-green-400 mt-0.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                                <div>
+                                    <h4 class="text-sm font-bold text-green-400">Premium Active</h4>
+                                    <p class="text-xs text-green-300/70 mt-1 leading-relaxed">
+                                        Use your API Key in the header for high limits (1,000 req/day).
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    {% else %}
+                        <div class="p-4 bg-slate-800/50 border border-slate-700 rounded-xl">
+                            <div class="flex items-start gap-3">
+                                <svg class="w-5 h-5 text-slate-400 mt-0.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+                                <div>
+                                    <h4 class="text-sm font-bold text-white">Free Tier Mode</h4>
+                                    <p class="text-xs text-slate-400 mt-1 leading-relaxed">
+                                        No Authentication required. <br>
+                                        Limited to 10 requests/day.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        <a href="{% url 'register' %}" class="block mt-3 text-center w-full py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold rounded-lg transition-colors">
+                            Get API Key
+                        </a>
+                    {% endif %}
+                </div>
+
+                <div class="bg-slate-900/60 border border-white/10 rounded-2xl p-6 shadow-xl backdrop-blur-sm">
+                    <h3 class="text-lg font-bold text-white mb-4">Endpoints & Params</h3>
+
+                    <div class="mb-6">
+                        <p class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Base Endpoint</p>
+                        <div class="flex items-center gap-2 bg-black/30 p-2 rounded-lg border border-white/5 font-mono text-xs">
+                            <span class="text-green-400 font-bold">GET</span>
+                            <span class="text-slate-300">/api/v1/jobs/</span>
+                        </div>
+                    </div>
+
+                    <p class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Query Parameters</p>
+                    <ul class="space-y-3">
+                        <li class="bg-white/5 p-3 rounded-lg border border-white/5">
+                            <div class="flex items-center justify-between mb-1">
+                                <code class="text-xs font-mono text-cyan-300 font-bold">search</code>
+                                <span class="text-[10px] text-slate-500 border border-slate-700 px-1 rounded">string</span>
+                            </div>
+                            <span class="text-slate-400 text-xs leading-snug block">Filter by job title, skill, or company (e.g. "Python").</span>
                         </li>
-                        <li class="me-2" role="presentation">
-                            <button class="inline-block p-4 border-b-2 border-transparent rounded-t-lg hover:text-indigo-300 hover:border-indigo-300/30 text-slate-400" id="python-tab" data-tabs-target="#python" type="button" role="tab" aria-controls="python" aria-selected="false">
-                                Python
-                            </button>
+                        <li class="bg-white/5 p-3 rounded-lg border border-white/5">
+                            <div class="flex items-center justify-between mb-1">
+                                <code class="text-xs font-mono text-cyan-300 font-bold">location</code>
+                                <span class="text-[10px] text-slate-500 border border-slate-700 px-1 rounded">string</span>
+                            </div>
+                            <span class="text-slate-400 text-xs leading-snug block">Filter by region or city (e.g. "Europe", "Berlin").</span>
                         </li>
-                        <li class="me-2" role="presentation">
-                            <button class="inline-block p-4 border-b-2 border-transparent rounded-t-lg hover:text-indigo-300 hover:border-indigo-300/30 text-slate-400" id="js-tab" data-tabs-target="#js" type="button" role="tab" aria-controls="js" aria-selected="false">
-                                JavaScript
-                            </button>
+                         <li class="bg-white/5 p-3 rounded-lg border border-white/5">
+                            <div class="flex items-center justify-between mb-1">
+                                <code class="text-xs font-mono text-cyan-300 font-bold">page</code>
+                                <span class="text-[10px] text-slate-500 border border-slate-700 px-1 rounded">int</span>
+                            </div>
+                            <span class="text-slate-400 text-xs leading-snug block">Pagination number (default: 1).</span>
                         </li>
                     </ul>
                 </div>
+            </div>
 
-                <div id="defaultTabContent" class="bg-slate-950 p-6 min-h-[400px] font-mono text-sm relative">
-                    <div class="absolute top-4 right-4 flex gap-2">
-                         <div class="w-3 h-3 rounded-full bg-white/10"></div>
-                         <div class="w-3 h-3 rounded-full bg-white/10"></div>
+            <div class="lg:col-span-8 space-y-8">
+
+                <div class="w-full bg-slate-900 border border-white/10 rounded-2xl overflow-hidden shadow-2xl">
+                    <div class="px-6 py-4 border-b border-white/10 bg-white/5 flex items-center justify-between">
+                        <h3 class="font-bold text-white">Request Example</h3>
+                        <div class="flex space-x-1">
+                            <div class="w-3 h-3 rounded-full bg-red-500/20 border border-red-500/50"></div>
+                            <div class="w-3 h-3 rounded-full bg-yellow-500/20 border border-yellow-500/50"></div>
+                            <div class="w-3 h-3 rounded-full bg-green-500/20 border border-green-500/50"></div>
+                        </div>
                     </div>
 
-                    <div class="hidden space-y-4" id="curl" role="tabpanel" aria-labelledby="curl-tab">
-                        {% if has_key %}
-                            <p class="text-slate-500"># 1. Premium Request (With Key)</p>
-                            <pre class="text-cyan-300 overflow-x-auto whitespace-pre-wrap">curl -X GET "{{ api_url }}" \
-  -H "Authorization: Api-Key {{ key_prefix }}..."</pre>
-                        {% else %}
-                            <p class="text-slate-500"># 1. Free Request (No Key Needed)</p>
-                            <pre class="text-cyan-300 overflow-x-auto whitespace-pre-wrap">curl -X GET "{{ api_url }}"</pre>
-                        {% endif %}
-
-                        <p class="text-slate-500 mt-6"># 2. Filter by Location</p>
-                        {% if has_key %}
-                        <pre class="text-cyan-300 overflow-x-auto whitespace-pre-wrap">curl -X GET "{{ api_url }}?location=Bulgaria" \
-  -H "Authorization: Api-Key {{ key_prefix }}..."</pre>
-                        {% else %}
-                        <pre class="text-cyan-300 overflow-x-auto whitespace-pre-wrap">curl -X GET "{{ api_url }}?location=Bulgaria"</pre>
-                        {% endif %}
+                    <div class="border-b border-white/5 bg-slate-900/50">
+                        <ul class="flex flex-wrap -mb-px text-sm font-medium text-center" id="defaultTab" data-tabs-toggle="#defaultTabContent" role="tablist">
+                            <li class="me-2" role="presentation">
+                                <button class="inline-block p-4 border-b-2 rounded-t-lg hover:text-indigo-300 hover:border-indigo-300/30 text-indigo-400 border-indigo-400 bg-white/5" id="curl-tab" data-tabs-target="#curl" type="button" role="tab" aria-controls="curl" aria-selected="true">
+                                    cURL
+                                </button>
+                            </li>
+                            <li class="me-2" role="presentation">
+                                <button class="inline-block p-4 border-b-2 border-transparent rounded-t-lg hover:text-indigo-300 hover:border-indigo-300/30 text-slate-400" id="python-tab" data-tabs-target="#python" type="button" role="tab" aria-controls="python" aria-selected="false">
+                                    Python
+                                </button>
+                            </li>
+                            <li class="me-2" role="presentation">
+                                <button class="inline-block p-4 border-b-2 border-transparent rounded-t-lg hover:text-indigo-300 hover:border-indigo-300/30 text-slate-400" id="js-tab" data-tabs-target="#js" type="button" role="tab" aria-controls="js" aria-selected="false">
+                                    JavaScript
+                                </button>
+                            </li>
+                        </ul>
                     </div>
 
-                    <div class="hidden" id="python" role="tabpanel" aria-labelledby="python-tab">
-<pre class="text-emerald-400 overflow-x-auto">import requests
+                    <div id="defaultTabContent" class="bg-[#0D1117] p-6 min-h-[300px] font-mono text-sm relative">
+
+                        <div class="hidden space-y-4" id="curl" role="tabpanel" aria-labelledby="curl-tab">
+                            {% if has_key %}
+                                <div class="space-y-2">
+                                    <p class="text-slate-500 select-none"># 1. Premium Request (With Key)</p>
+                                    <pre class="code-scrollbar text-cyan-300 overflow-x-auto whitespace-pre-wrap p-4 bg-white/5 rounded-lg border border-white/5">curl -X GET "{{ api_url }}" \
+  -H "Authorization: Api-Key {{ key_prefix }}..."</pre>
+                                </div>
+                            {% else %}
+                                <div class="space-y-2">
+                                    <p class="text-slate-500 select-none"># 1. Free Request (No Key Needed)</p>
+                                    <pre class="code-scrollbar text-cyan-300 overflow-x-auto whitespace-pre-wrap p-4 bg-white/5 rounded-lg border border-white/5">curl -X GET "{{ api_url }}"</pre>
+                                </div>
+                            {% endif %}
+
+                            <div class="space-y-2 pt-4">
+                                <p class="text-slate-500 select-none"># 2. Filter by Location & Keyword</p>
+                                <pre class="code-scrollbar text-cyan-300 overflow-x-auto whitespace-pre-wrap p-4 bg-white/5 rounded-lg border border-white/5">curl -X GET "{{ api_url }}?location=Europe&search=Python" {% if has_key %}\
+  -H "Authorization: Api-Key {{ key_prefix }}..."{% endif %}</pre>
+                            </div>
+                        </div>
+
+                        <div class="hidden" id="python" role="tabpanel" aria-labelledby="python-tab">
+<pre class="code-scrollbar text-emerald-400 overflow-x-auto p-4 bg-white/5 rounded-lg border border-white/5">import requests
 
 url = "{{ api_url }}"
+
 {% if has_key %}
+# Your API Key goes here
 headers = {
     "Authorization": "Api-Key {{ key_prefix }}..."
 }
 {% else %}
-# Free Tier: No headers required!
+# Free Tier: No headers required
 headers = {}
 {% endif %}
 
-# Example: Filtering
 params = {
-    "location": "Bulgaria",
+    "location": "Europe",
     "search": "Python"
 }
 
 response = requests.get(url, headers=headers, params=params)
 
 if response.status_code == 200:
-    jobs = response.json()
-    print(f"Found {len(jobs)} jobs!")
+    data = response.json()
+    print(f"Found {data['count']} jobs!")
+    for job in data['results']:
+        print(f"{job['title']} at {job['company']}")
 else:
     print("Error:", response.status_code)</pre>
-                    </div>
+                        </div>
 
-                    <div class="hidden" id="js" role="tabpanel" aria-labelledby="js-tab">
-<pre class="text-yellow-300 overflow-x-auto">const url = "{{ api_url }}";
+                        <div class="hidden" id="js" role="tabpanel" aria-labelledby="js-tab">
+<pre class="code-scrollbar text-yellow-300 overflow-x-auto p-4 bg-white/5 rounded-lg border border-white/5">const url = "{{ api_url }}";
 
-// Build params
 const params = new URLSearchParams({
-    location: "Bulgaria",
+    location: "Europe",
     search: "React"
 });
 
 {% if has_key %}
-// Premium: Use your Key
 const headers = {
     "Authorization": "Api-Key {{ key_prefix }}..."
 };
 {% else %}
-// Free Tier: No headers!
 const headers = {};
 {% endif %}
 
-fetch(`${url}?${params}`, { headers })
-.then(response => response.json())
-.then(data => console.log(data))
-.catch(err => console.error(err));</pre>
-                    </div>
+async function fetchJobs() {
+    try {
+        const res = await fetch(`${url}?${params}`, { headers });
+        const data = await res.json();
 
+        console.log(`Found ${data.count} jobs:`);
+        console.log(data.results);
+    } catch (err) {
+        console.error("Failed to fetch jobs:", err);
+    }
+}
+
+fetchJobs();</pre>
+                        </div>
+                    </div>
                 </div>
+
+                <div class="bg-slate-900/60 border border-white/10 rounded-2xl p-8 shadow-xl backdrop-blur-sm">
+                    <h3 class="text-xl font-bold text-white mb-4">Response Object</h3>
+                    <p class="text-slate-400 mb-6">
+                        The API returns a JSON object containing pagination metadata and a list of job results.
+                    </p>
+
+                    <div class="relative group">
+                        <div class="absolute -inset-1 bg-gradient-to-r from-indigo-500 to-cyan-500 rounded-lg blur opacity-20 group-hover:opacity-40 transition duration-1000 group-hover:duration-200"></div>
+                        <div class="relative bg-[#0D1117] rounded-lg border border-white/10 p-4 font-mono text-sm overflow-hidden">
+<pre class="code-scrollbar overflow-x-auto text-slate-300">
+<span class="text-yellow-500">{</span>
+  <span class="text-indigo-400">"count"</span>: <span class="text-cyan-300">142</span>,
+  <span class="text-indigo-400">"next"</span>: <span class="text-green-400">"https://techjobsdata.com/api/v1/jobs/?page=2"</span>,
+  <span class="text-indigo-400">"previous"</span>: <span class="text-slate-500">null</span>,
+  <span class="text-indigo-400">"results"</span>: <span class="text-yellow-500">[</span>
+    <span class="text-purple-400">{</span>
+      <span class="text-indigo-400">"id"</span>: <span class="text-cyan-300">8942</span>,
+      <span class="text-indigo-400">"title"</span>: <span class="text-green-400">"Senior Backend Engineer"</span>,
+      <span class="text-indigo-400">"company"</span>: <span class="text-green-400">"Spotify"</span>,
+      <span class="text-indigo-400">"location"</span>: <span class="text-green-400">"Remote (Europe)"</span>,
+      <span class="text-indigo-400">"salary_min"</span>: <span class="text-cyan-300">120000</span>,
+      <span class="text-indigo-400">"salary_max"</span>: <span class="text-cyan-300">160000</span>,
+      <span class="text-indigo-400">"currency"</span>: <span class="text-green-400">"USD"</span>,
+      <span class="text-indigo-400">"posted_at"</span>: <span class="text-green-400">"2024-03-15T10:30:00Z"</span>,
+      <span class="text-indigo-400">"source"</span>: <span class="text-green-400">"LinkedIn"</span>,
+      <span class="text-indigo-400">"skills"</span>: <span class="text-yellow-500">[</span><span class="text-green-400">"Python"</span>, <span class="text-green-400">"Django"</span>, <span class="text-green-400">"PostgreSQL"</span><span class="text-yellow-500">]</span>,
+      <span class="text-indigo-400">"url"</span>: <span class="text-green-400">"https://linkedin.com/jobs/..."</span>
+    <span class="text-purple-400">}</span>,
+    <span class="text-slate-500">...</span>
+  <span class="text-yellow-500">]</span>
+<span class="text-yellow-500">}</span>
+</pre>
+                        </div>
+                    </div>
+                </div>
+
             </div>
         </div>
     </div>
