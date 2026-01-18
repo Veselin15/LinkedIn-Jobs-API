@@ -1,181 +1,244 @@
 import re
 from datetime import date, timedelta
+from typing import List, Tuple, Optional, Set
+
 from .constants import (
     TECH_KEYWORDS, NEGATION_PATTERNS, SENIORITY_MAP,
     SALARY_IGNORE_TERMS, SALARY_HINTS, SALARY_MULTIPLIERS
 )
 
+# --- 1. PRE-COMPILE PATTERNS FOR PERFORMANCE ---
+# compiling regex once at the module level is much faster than doing it for every job
 
-def extract_skills(text):
+# Skills: Handle C++ and C# specifically, otherwise use word boundaries
+SKILL_PATTERNS = []
+for skill in TECH_KEYWORDS:
+    if skill in ["C++", "C#", ".NET"]:
+        pattern = re.escape(skill.lower())
+    else:
+        pattern = r'\b' + re.escape(skill.lower()) + r'\b'
+    SKILL_PATTERNS.append((skill, re.compile(pattern)))
+
+NEGATION_REGEXES = [re.compile(p) for p in NEGATION_PATTERNS]
+
+# Seniority: Compile all patterns
+SENIORITY_PATTERNS = {
+    level: [re.compile(r'\b' + kw + r'\b') for kw in kws]
+    for level, kws in SENIORITY_MAP.items()
+}
+
+# Salary Ignore Terms
+SALARY_IGNORE_REGEX = re.compile(r'\b(' + '|'.join(SALARY_IGNORE_TERMS) + r')\b')
+
+
+def extract_skills(text: str) -> List[str]:
     """
-    Finds skills but ignores them if they appear near 'no experience' phrases.
+    Extracts tech skills from text, filtering out negated contexts.
+    Example: "No Python experience required" -> Python is NOT extracted.
     """
     if not text:
         return []
 
-    found_skills = set()
     text_lower = text.lower()
+    found_skills = set()
 
-    for skill in TECH_KEYWORDS:
-        # Escape the skill for regex (e.g., C++)
-        skill_esc = re.escape(skill.lower())
-        pattern = r'\b' + skill_esc + r'\b'
-
-        # C++ and C# handling
-        if skill in ["C++", "C#", ".NET"]:
-            pattern = re.escape(skill.lower())
-
-        # Find all occurrences of the skill
-        for match in re.finditer(pattern, text_lower):
+    for skill_name, pattern in SKILL_PATTERNS:
+        # Fast search
+        for match in pattern.finditer(text_lower):
             start, end = match.span()
 
-            # Context Window: 50 chars before and 50 chars after
-            context_start = max(0, start - 50)
-            context_end = min(len(text_lower), end + 50)
-            context_window = text_lower[context_start:context_end]
+            # Context Window: Check 40 chars before/after for negation
+            ctx_start = max(0, start - 40)
+            ctx_end = min(len(text_lower), end + 40)
+            context = text_lower[ctx_start:ctx_end]
 
-            # Check for negations in this window
-            is_negative = False
-            for neg in NEGATION_PATTERNS:
-                if re.search(neg, context_window):
-                    is_negative = True
-                    break
-
-            if not is_negative:
-                found_skills.add(skill)
-                # Once found valid, move to next skill
+            # Check negation
+            if not any(neg.search(context) for neg in NEGATION_REGEXES):
+                found_skills.add(skill_name)
+                # Once found valid, break loop for this specific skill
+                # (no need to find the same skill twice)
                 break
 
     return list(found_skills)
 
 
-def extract_seniority(title, description):
+def extract_seniority(title: str, description: str) -> str:
     """
     Determines seniority. Title has higher priority than description.
+    Includes logic to ignore "Reporting to Senior Manager" type phrases.
     """
     text_title = title.lower() if title else ""
     text_desc = description.lower() if description else ""
 
-    # 1. Check Title First (Strongest Signal)
-    for level, keywords in SENIORITY_MAP.items():
-        for kw in keywords:
-            if re.search(r'\b' + kw + r'\b', text_title):
+    # 1. Title Scan (High Confidence)
+    for level, patterns in SENIORITY_PATTERNS.items():
+        for pattern in patterns:
+            if pattern.search(text_title):
                 return level
 
-    # 2. Check Description (Weaker Signal)
-    for level, keywords in SENIORITY_MAP.items():
-        for kw in keywords:
-            if re.search(r'\b' + kw + r'\b', text_desc):
-                return level
+    # 2. Description Scan (Lower Confidence + Context Check)
+    # Exclude phrases indicating a supervisor, not the role itself
+    exclusion_pattern = re.compile(r'(report(ing|s)?\s+to|supervised\s+by)\s+[\w\s]*$')
 
-    # Default
+    for level, patterns in SENIORITY_PATTERNS.items():
+        for pattern in patterns:
+            # Find all matches in description
+            for match in pattern.finditer(text_desc):
+                # Check context 25 chars before the match
+                start = match.start()
+                pre_context = text_desc[max(0, start - 25):start]
+
+                # Only accept if NOT preceded by "reporting to"
+                if not exclusion_pattern.search(pre_context):
+                    return level
+
     return "Not Specified"
 
 
-def parse_salary(text):
-    if not text: return None, None, None
-
-    # 1. Detect Currency
-    currency = "USD"
-    if '€' in text or 'EUR' in text:
-        currency = "EUR"
-    elif '£' in text or 'GBP' in text:
-        currency = "GBP"
+def parse_salary(text: str) -> Tuple[Optional[float], Optional[float], Optional[str]]:
+    """
+    Robust salary parser. Handles:
+    - Ranges: "80-100k", "$120k - $150k"
+    - Decimals: "1.5k" -> 1500
+    - Rates: "$60 / hour" -> Annualized to ~124k
+    - Currencies: $, €, £, etc.
+    """
+    if not text:
+        return None, None, None
 
     text_lower = text.lower()
-    clean_numbers = []
 
-    # --- Helper: Detect Multiplier based on context ---
-    def get_annual_multiplier(end_pos):
-        # Look 30 chars ahead (e.g., "5000 per month")
-        suffix = text_lower[end_pos:end_pos + 30]
+    # 1. Currency Detection
+    currency = "USD"  # Default
+    if any(s in text for s in ['€', 'eur']):
+        currency = "EUR"
+    elif any(s in text for s in ['£', 'gbp']):
+        currency = "GBP"
+    elif 'bgn' in text_lower:
+        currency = "BGN"
+    elif 'aud' in text_lower:
+        currency = "AUD"
+    elif 'cad' in text_lower:
+        currency = "CAD"
 
+    # 2. Helper: Determine multiplier (Yearly vs Monthly vs Hourly)
+    def get_period_multiplier(match_end_pos):
+        # Look ahead 40 chars for "per month", "/hr", etc.
+        suffix = text_lower[match_end_pos:match_end_pos + 40]
         for period, patterns in SALARY_MULTIPLIERS.items():
             for pattern in patterns:
                 if re.search(pattern, suffix):
-                    if period == 'monthly': return 12
-                    if period == 'hourly': return 2080  # 40hr * 52w
-                    if period == 'daily': return 260  # 5d * 52w
-                    if period == 'yearly': return 1
-        return 1  # Default to yearly if unknown
+                    if period == 'monthly':
+                        return 12
+                    elif period == 'hourly':
+                        return 2080  # 40h * 52w
+                    elif period == 'daily':
+                        return 260  # 5d * 52w
+        return 1  # Default to Yearly
 
-    # --- Helper: Validator ---
-    def is_valid_match(match_obj, has_k):
-        start, end = match_obj.span()
-        suffix = text_lower[end:end + 40]
+    # 3. Helper: Parse number string
+    def parse_num(num_str, suffix_k):
+        # Remove commas (100,000 -> 100000), keep dots (1.5 -> 1.5)
+        clean = num_str.replace(',', '')
+        try:
+            val = float(clean)
+            if suffix_k:
+                val *= 1000
+            return int(val)
+        except ValueError:
+            return None
 
-        # 1. Ignore "250,000 users"
-        if any(re.search(r'\b' + re.escape(term) + r'\b', suffix) for term in SALARY_IGNORE_TERMS):
-            return False
+    candidates = []
 
-        # 2. Accept if explicit currency, 'k' suffix, or salary keyword
-        window = text_lower[max(0, start - 50):min(len(text_lower), end + 50)]
-        if has_k: return True
-        if any(s in text_lower[max(0, start - 5):end + 5] for s in ['$', '€', '£', 'bgn']): return True
-        if any(re.search(r'\b' + h + r'\b', window) for h in SALARY_HINTS): return True
+    # --- PATTERN A: Ranges (e.g. "80-100k", "80k - 100k", "$80,000 - $120,000") ---
+    range_pattern = re.compile(
+        r'([$£€]?\s*\d{1,3}(?:[,\.]\d{3})*(?:\.\d+)?)\s*([kK])?\s*[-–to]+\s*([$£€]?\s*\d{1,3}(?:[,\.]\d{3})*(?:\.\d+)?)\s*([kK])?')
 
-        return False
+    for m in range_pattern.finditer(text_lower):
+        raw_n1 = re.sub(r'[$£€\s]', '', m.group(1))  # Clean symbols
+        raw_n2 = re.sub(r'[$£€\s]', '', m.group(3))
 
-    # Strategy A: Ranges (80-100k)
-    for m in re.finditer(r'(\d+)\s*[-–to]\s*(\d+)\s*[kK]', text_lower):
-        if is_valid_match(m, True):
-            mult = get_annual_multiplier(m.end())
-            clean_numbers.extend([int(m.group(1)) * 1000 * mult, int(m.group(2)) * 1000 * mult])
+        k1 = bool(m.group(2))  # First K?
+        k2 = bool(m.group(4))  # Second K?
 
-    # Strategy B: Ranges without k (4000-5000 / month)
-    if not clean_numbers:
-        for m in re.finditer(r'(\d+)\s*[-–to]\s*(\d+)', text_lower):
-            # Check if this range is followed by a period (e.g. /month)
-            mult = get_annual_multiplier(m.end())
-            # Only accept "naked" ranges if we found a period multiplier (implies it's a rate)
-            if mult > 1 and is_valid_match(m, False):
-                clean_numbers.extend([int(m.group(1)) * mult, int(m.group(2)) * mult])
+        # Logic: If "80-100k", apply 'k' to both
+        if k2 and not k1: k1 = True
 
-    # Strategy C: Individual numbers
-    if not clean_numbers:
-        for m in re.finditer(r'(\d+[,\.]?\d*)\s*([kK])?', text_lower):
-            val_str = m.group(1).replace(',', '').replace('.', '')
-            if not val_str.isdigit(): continue
+        v1 = parse_num(raw_n1, k1)
+        v2 = parse_num(raw_n2, k2)
 
-            val = float(val_str)
-            has_k = (m.group(2) and m.group(2).lower() == 'k')
-            if has_k: val *= 1000
+        if v1 and v2:
+            mult = get_period_multiplier(m.end())
+            candidates.append((v1 * mult, v2 * mult))
 
-            if is_valid_match(m, has_k):
-                mult = get_annual_multiplier(m.end())
-                annual_val = val * mult
+    # --- PATTERN B: Single Numbers (e.g. "$120k", "5000 / month") ---
+    # Only if A didn't find anything or to supplement
+    single_pattern = re.compile(r'([$£€])?\s*(\d{1,3}(?:[,\.]\d{3})*(?:\.\d+)?)\s*([kK])?')
 
-                # Sanity Check (Annualized)
-                if 15000 <= annual_val <= 500000:
-                    clean_numbers.append(int(annual_val))
+    for m in single_pattern.finditer(text_lower):
+        start, end = m.span()
 
-    if not clean_numbers: return None, None, None
+        # Ignore if followed by invalid terms (e.g. "250,000 users")
+        suffix_window = text_lower[end:end + 20]
+        if SALARY_IGNORE_REGEX.search(suffix_window):
+            continue
 
-    return min(clean_numbers), max(clean_numbers), currency
+        raw_val = m.group(2)
+        has_k = bool(m.group(3))
+        has_curr = bool(m.group(1))
 
-def parse_relative_date(text):
-    """Converts '3 days ago', '1 week ago' to a real date object."""
+        # Valid salary must have a Currency Symbol OR 'k' OR 'salary' keyword nearby
+        window = text_lower[max(0, start - 30):min(len(text_lower), end + 30)]
+        is_valid_context = any(h in window for h in SALARY_HINTS) or has_curr or has_k
+
+        if is_valid_context:
+            val = parse_num(raw_val, has_k)
+            if val:
+                mult = get_period_multiplier(end)
+                candidates.append((val * mult, val * mult))
+
+    # 4. Selection Logic
+    if not candidates:
+        return None, None, None
+
+    # Filter sanity (Annualized between 5k and 1M)
+    valid_candidates = [
+        (mn, mx) for mn, mx in candidates
+        if 5000 <= mn <= 1000000
+    ]
+
+    if not valid_candidates:
+        return None, None, None
+
+    # Pick the best candidate (widest range usually indicates the main salary block)
+    best = max(valid_candidates, key=lambda x: x[1])
+    return best[0], best[1], currency
+
+
+def parse_relative_date(text: str) -> date:
+    """
+    Parses '3 days ago', '1 week ago', 'just now'.
+    """
     if not text:
         return date.today()
 
     text = text.lower().strip()
     today = date.today()
 
-    if 'hour' in text or 'minute' in text or 'second' in text:
+    if any(k in text for k in ['just now', 'today', 'hour', 'minute', 'second']):
         return today
 
-    try:
-        # Extract the number (e.g. "3" from "3 days ago")
-        number = int(''.join(filter(str.isdigit, text)))
+    # Regex to capture specific number and unit
+    match = re.search(r'(\d+)\+?\s*(day|week|month)', text)
+    if match:
+        num = int(match.group(1))
+        unit = match.group(2)
 
-        if 'day' in text:
-            return today - timedelta(days=number)
-        if 'week' in text:
-            return today - timedelta(weeks=number)
-        if 'month' in text:
-            return today - timedelta(days=number * 30)
-
-    except ValueError:
-        pass
+        if 'day' in unit:
+            return today - timedelta(days=num)
+        if 'week' in unit:
+            return today - timedelta(weeks=num)
+        if 'month' in unit:
+            return today - timedelta(days=num * 30)
 
     return today
