@@ -13,3 +13,4 @@ scrapy-user-agents
 stripe
 whitenoise
 gunicorn
+brotli
