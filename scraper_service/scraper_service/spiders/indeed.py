@@ -28,27 +28,32 @@ class IndeedSpider(scrapy.Spider):
         }
         url = f"https://www.indeed.com/jobs?{urlencode(params)}"
 
-        yield scrapy.Request(url=url, callback=self.parse)
+        # UPDATE 1: Add impersonate meta key here
+        yield scrapy.Request(
+            url=url,
+            callback=self.parse,
+            meta={'impersonate': 'chrome120'}
+        )
 
     custom_settings = {
         # Mimic a FULL modern browser (Chrome 120 on Windows)
         'DEFAULT_REQUEST_HEADERS': {
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
             'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8',
-            'Accept-Language': 'en-US,en;q=0.9',  # slightly tweaked
+            'Accept-Language': 'en-US,en;q=0.9',
             'Accept-Encoding': 'gzip, deflate, br',
             'Connection': 'keep-alive',
             'Upgrade-Insecure-Requests': '1',
             'Sec-Fetch-Dest': 'document',
             'Sec-Fetch-Mode': 'navigate',
-            'Sec-Fetch-Site': 'same-origin',  # Changed to same-origin
+            'Sec-Fetch-Site': 'same-origin',
             'Sec-Fetch-User': '?1',
             'Cache-Control': 'max-age=0',
             # --- CRITICAL MISSING HEADERS (Client Hints) ---
             'Sec-Ch-Ua': '"Not_A Brand";v="8", "Chromium";v="120", "Google Chrome";v="120"',
             'Sec-Ch-Ua-Mobile': '?0',
             'Sec-Ch-Ua-Platform': '"Windows"',
-            'Referer': 'https://www.indeed.com/',  # Referer helps a lot
+            'Referer': 'https://www.indeed.com/',
         },
         'DOWNLOAD_DELAY': 5,
         'RANDOMIZE_DOWNLOAD_DELAY': True,
@@ -85,17 +90,26 @@ class IndeedSpider(scrapy.Spider):
                     # This bypasses all the tracking redirect mess
                     job_url = f"https://www.indeed.com/viewjob?jk={jk}"
 
+                    # UPDATE 2: Add impersonate meta key to job details request
                     yield scrapy.Request(
                         job_url,
                         callback=self.parse_detail,
-                        meta={'listing_url': job_url}
+                        meta={
+                            'listing_url': job_url,
+                            'impersonate': 'chrome120'
+                        }
                     )
 
         # 2. Pagination (Find the 'Next' button)
         # Usually has aria-label="Next" or data-testid="pagination-page-next"
         next_page = response.css('a[data-testid="pagination-page-next"]::attr(href)').get()
         if next_page:
-            yield response.follow(next_page, callback=self.parse)
+            # UPDATE 3: Add impersonate meta key to pagination
+            yield response.follow(
+                next_page,
+                callback=self.parse,
+                meta={'impersonate': 'chrome120'}
+            )
 
     def parse_detail(self, response):
         """
