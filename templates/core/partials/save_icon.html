@@ -1,6 +1,7 @@
 <button
     {% if user.is_authenticated %}
         hx-post="{% url 'toggle_save_job' job.id %}"
+        hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'
         hx-swap="outerHTML"
     {% else %}
         onclick="window.location.href='{% url 'login' %}'"

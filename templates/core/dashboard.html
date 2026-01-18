@@ -1,126 +1,97 @@
 {% extends 'base.html' %}
 
 {% block content %}
-    <div class="max-w-6xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
+<div class="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
 
-        <div class="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-12">
-            <div>
-                <h1 class="text-3xl font-bold text-white tracking-tight">Dashboard</h1>
-                <p class="mt-2 text-slate-400">Manage your API keys and billing subscription.</p>
-            </div>
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-12">
+        <div>
+            <h1 class="text-3xl font-bold text-white tracking-tight">Dashboard</h1>
+            <p class="mt-2 text-slate-400">Manage your API access, subscription, and saved listings.</p>
+        </div>
 
-            <div class="flex items-center gap-3">
-                {% if is_premium %}
-                    <span class="inline-flex items-center gap-2 rounded-full bg-indigo-500/10 px-4 py-2 text-sm font-medium text-indigo-400 ring-1 ring-inset ring-indigo-500/20">
+        <div class="flex items-center gap-3">
+            {% if is_premium %}
+                <span class="inline-flex items-center gap-2 rounded-full bg-indigo-500/10 px-4 py-2 text-sm font-medium text-indigo-400 ring-1 ring-inset ring-indigo-500/20 shadow-[0_0_10px_rgba(99,102,241,0.2)]">
                     <span class="relative flex h-2 w-2">
                       <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75"></span>
                       <span class="relative inline-flex rounded-full h-2 w-2 bg-indigo-500"></span>
                     </span>
                     Premium Active
                 </span>
-                {% else %}
-                    <span class="inline-flex items-center rounded-full bg-slate-800 px-4 py-2 text-sm font-medium text-slate-400 ring-1 ring-inset ring-white/10">
+            {% else %}
+                <span class="inline-flex items-center rounded-full bg-slate-800 px-4 py-2 text-sm font-medium text-slate-400 ring-1 ring-inset ring-white/10">
                     Free Tier
                 </span>
-                {% endif %}
-            </div>
-        </div>
-        <div class="mt-12">
-            <h2 class="text-2xl font-bold text-white mb-6">Saved Jobs</h2>
-
-            {% if saved_jobs %}
-                <div class="grid gap-4">
-                    {% for saved in saved_jobs %}
-                        <div class="bg-slate-800/50 border border-white/5 p-4 rounded-xl flex items-center justify-between">
-                            <div>
-                                <a href="{{ saved.job.url }}" target="_blank"
-                                   class="text-lg font-bold text-white hover:text-indigo-400">
-                                    {{ saved.job.title }}
-                                </a>
-                                <p class="text-slate-400 text-sm">{{ saved.job.company }} • {{ saved.job.location }}</p>
-                            </div>
-
-                            <button hx-post="{% url 'toggle_save_job' saved.job.id %}"
-                                    hx-target="closest div"
-                                    hx-swap="outerHTML"
-                                    class="text-slate-500 hover:text-red-400">
-                                <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
-                                    <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/>
-                                </svg>
-                            </button>
-                        </div>
-                    {% endfor %}
-                </div>
-            {% else %}
-                <p class="text-slate-500">You haven't saved any jobs yet.</p>
-                <a href="{% url 'job_list' %}" class="inline-block mt-4 text-indigo-400 hover:text-white">Browse Jobs
-                    &rarr;</a>
             {% endif %}
         </div>
+    </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
 
-            <div class="relative group bg-white/5 border border-white/10 rounded-2xl p-8 hover:border-white/20 transition-all">
-                <div class="flex items-center justify-between mb-6">
+        <div class="lg:col-span-2 space-y-8">
+
+            <div class="relative group bg-slate-900/50 border border-white/10 rounded-2xl p-8 hover:border-indigo-500/30 transition-all shadow-xl">
+                <div class="absolute inset-0 bg-gradient-to-r from-indigo-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity rounded-2xl pointer-events-none"></div>
+
+                <div class="flex items-center justify-between mb-6 relative z-10">
                     <div class="flex items-center gap-3">
                         <div class="p-2 bg-yellow-500/10 rounded-lg text-yellow-400">
                             <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                      d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"/>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"/>
                             </svg>
                         </div>
                         <h2 class="text-xl font-bold text-white">API Key</h2>
                     </div>
 
+                    {% if has_key %}
                     <form action="{% url 'regenerate_api_key' %}" method="POST"
                           onsubmit="return confirm('Regenerate key? Old key will stop working immediately.');">
                         {% csrf_token %}
-                        <button type="submit"
-                                class="text-sm font-medium text-red-400 hover:text-red-300 transition-colors">
+                        <button type="submit" class="text-sm font-medium text-red-400 hover:text-red-300 transition-colors bg-red-500/10 hover:bg-red-500/20 px-3 py-1.5 rounded-lg border border-red-500/20">
                             Regenerate
                         </button>
                     </form>
+                    {% endif %}
                 </div>
 
                 {% if has_key %}
-                    <div class="space-y-4">
-                        <p class="text-sm text-slate-400">Include this key in the <code class="text-indigo-300">Authorization</code>
-                            header.</p>
+                    <div class="space-y-4 relative z-10">
+                        <p class="text-sm text-slate-400">Include this key in the <code class="text-indigo-300 bg-indigo-500/10 px-1 py-0.5 rounded">Authorization</code> header.</p>
 
-                        <div class="relative">
+                        <div class="relative group/input">
                             <input type="text" value="{{ key_prefix }}.****************" readonly
-                                   class="block w-full rounded-lg border border-slate-700 bg-slate-950 text-slate-400 font-mono text-sm p-4 pr-16 focus:border-indigo-500 focus:ring-indigo-500">
+                                   class="block w-full rounded-xl border border-slate-700 bg-slate-950 text-slate-400 font-mono text-sm p-4 pr-16 focus:border-indigo-500 focus:ring-indigo-500 transition-all group-hover/input:border-slate-600">
 
                             <button onclick="navigator.clipboard.writeText('{{ key_prefix }}...'); alert('Prefix copied!')"
-                                    class="absolute top-2 right-2 p-2 text-slate-400 hover:text-white bg-white/5 hover:bg-white/10 rounded-md transition-all">
+                                    class="absolute top-2.5 right-2.5 p-2 text-slate-400 hover:text-white bg-white/5 hover:bg-white/10 rounded-lg transition-all" title="Copy Prefix">
                                 <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                          d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/>
                                 </svg>
                             </button>
                         </div>
-                        <p class="text-xs text-slate-500">* Full key is hidden for security.</p>
+                        <p class="text-xs text-slate-500 flex items-center gap-1">
+                            <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+                            Full key is hidden for security.
+                        </p>
                     </div>
                 {% else %}
-                    <div class="bg-yellow-500/10 border border-yellow-500/20 rounded-xl p-4">
-                        <p class="text-sm text-yellow-200 mb-3">You don't have an API Key yet.</p>
+                    <div class="bg-yellow-500/10 border border-yellow-500/20 rounded-xl p-6 text-center">
+                        <p class="text-yellow-200 mb-4 font-medium">You don't have an API Key yet.</p>
                         <form action="{% url 'checkout' %}" method="POST">
                             {% csrf_token %}
-                            <button type="submit"
-                                    class="w-full py-2 px-4 bg-yellow-600 hover:bg-yellow-500 text-white font-bold rounded-lg text-sm transition-colors">
-                                Unlock API Key
+                            <button type="submit" class="inline-flex items-center justify-center px-6 py-3 bg-yellow-500 hover:bg-yellow-400 text-black font-bold rounded-xl transition-all shadow-lg shadow-yellow-500/20 hover:-translate-y-0.5">
+                                Unlock API Key 🔑
                             </button>
                         </form>
                     </div>
                 {% endif %}
             </div>
 
-            <div class="relative group bg-white/5 border border-white/10 rounded-2xl p-8 hover:border-white/20 transition-all">
+            <div class="bg-slate-900/50 border border-white/10 rounded-2xl p-8 hover:border-green-500/30 transition-all shadow-xl">
                 <div class="flex items-center gap-3 mb-6">
                     <div class="p-2 bg-green-500/10 rounded-lg text-green-400">
                         <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                  d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/>
                         </svg>
                     </div>
                     <h2 class="text-xl font-bold text-white">Subscription</h2>
@@ -129,34 +100,84 @@
                 <div class="space-y-6">
                     {% if is_premium %}
                         <div class="flex items-center justify-between p-4 bg-white/5 rounded-xl border border-white/5">
-                            <span class="text-slate-300">Plan</span>
-                            <span class="font-bold text-white">Developer Pro ($10/mo)</span>
+                            <span class="text-slate-300">Current Plan</span>
+                            <span class="font-bold text-white flex items-center gap-2">
+                                Developer Pro
+                                <span class="px-2 py-0.5 rounded text-xs bg-green-500/20 text-green-300 border border-green-500/20">$10/mo</span>
+                            </span>
                         </div>
 
                         <form action="{% url 'billing_portal' %}" method="POST">
                             {% csrf_token %}
-                            <button type="submit"
-                                    class="w-full py-3 px-4 bg-white/10 hover:bg-white/20 text-white font-medium rounded-lg text-sm transition-colors border border-white/10">
+                            <button type="submit" class="w-full py-3 px-4 bg-white/5 hover:bg-white/10 text-white font-medium rounded-xl transition-colors border border-white/10 flex items-center justify-center gap-2">
                                 Manage Billing / Cancel
+                                <svg class="w-4 h-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
                             </button>
                         </form>
                     {% else %}
                         <div class="flex items-center justify-between p-4 bg-white/5 rounded-xl border border-white/5">
-                            <span class="text-slate-300">Plan</span>
+                            <span class="text-slate-300">Current Plan</span>
                             <span class="font-bold text-slate-400">Hobbyist (Free)</span>
                         </div>
 
                         <form action="{% url 'checkout' %}" method="POST">
                             {% csrf_token %}
-                            <button type="submit"
-                                    class="w-full py-3 px-4 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-lg text-sm shadow-lg shadow-indigo-500/25 transition-all">
+                            <button type="submit" class="w-full py-3 px-4 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-xl text-sm shadow-lg shadow-indigo-500/25 transition-all transform hover:-translate-y-0.5">
                                 Upgrade to Premium
                             </button>
                         </form>
                     {% endif %}
                 </div>
             </div>
-
         </div>
+
+        <div class="lg:col-span-1">
+            <div class="bg-slate-900/80 border border-white/10 rounded-2xl p-6 shadow-2xl backdrop-blur-md sticky top-24">
+                <div class="flex items-center justify-between mb-6">
+                    <h2 class="text-xl font-bold text-white flex items-center gap-2">
+                        <svg class="w-5 h-5 text-yellow-400" fill="currentColor" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+                        Saved Jobs
+                    </h2>
+                    <span class="text-xs font-mono text-slate-500 bg-white/5 px-2 py-1 rounded-md">{{ saved_jobs|length }} Saved</span>
+                </div>
+
+                <div class="space-y-3 max-h-[600px] overflow-y-auto custom-scrollbar pr-1">
+                    {% if saved_jobs %}
+                        {% for saved in saved_jobs %}
+                            <div class="group bg-white/[0.03] hover:bg-white/[0.08] border border-white/5 p-4 rounded-xl flex items-start justify-between transition-all gap-3">
+                                <div class="min-w-0">
+                                    <a href="{{ saved.job.url }}" target="_blank"
+                                       class="text-sm font-bold text-white hover:text-indigo-400 block truncate leading-tight mb-1" title="{{ saved.job.title }}">
+                                        {{ saved.job.title }}
+                                    </a>
+                                    <p class="text-slate-500 text-xs truncate">{{ saved.job.company }}</p>
+                                    <p class="text-slate-600 text-xs mt-1">{{ saved.job.location }}</p>
+                                </div>
+
+                                <button hx-post="{% url 'toggle_save_job' saved.job.id %}"
+                                        hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'
+                                        hx-target="closest div.group"
+                                        hx-swap="outerHTML"
+                                        class="text-slate-600 hover:text-red-400 p-1 rounded-md hover:bg-white/5 transition-colors shrink-0"
+                                        title="Remove">
+                                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                                        <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/>
+                                    </svg>
+                                </button>
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="text-center py-10 border border-dashed border-white/10 rounded-xl">
+                            <p class="text-slate-500 text-sm mb-4">No saved jobs yet.</p>
+                            <a href="{% url 'job_list' %}" class="inline-block text-xs font-bold text-indigo-400 hover:text-indigo-300 border border-indigo-500/30 px-3 py-1.5 rounded-lg hover:bg-indigo-500/10 transition-all">
+                                Browse Jobs &rarr;
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
     </div>
+</div>
 {% endblock %}
