@@ -3,7 +3,9 @@ from datetime import date
 
 
 class RemotePythonSpider(scrapy.Spider):
-    name = "remote_python"
+    # FIX: Change name from "remote_python" to "pyjobs" to match the filename and task
+    name = "pyjobs"
+
     # We are switching to python.org because it is very stable for learning
     start_urls = ["https://www.python.org/jobs/"]
 

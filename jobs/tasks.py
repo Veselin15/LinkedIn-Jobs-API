@@ -95,7 +95,7 @@ def run_bulk_scrape():
     run_spider("remoteok")   # RemoteOK
     run_spider("pyjobs")     # PyJobs
     run_spider("themuse")    # <--- NEW: The Muse (High quality, API-based)
-    run_spider("glassdoor", timeout=180)
+    run_spider("glassdoor", timeout=600)
     # --- PART 2: The "Hard" Scrapers (Browser Automation) ---
     # These often require residential proxies or get IP-blocked on cloud servers.
     # We disable them by default to ensure the bulk task finishes successfully.
