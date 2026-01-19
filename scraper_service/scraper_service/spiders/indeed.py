@@ -18,43 +18,23 @@ class IndeedSpider(scrapy.Spider):
         self.location = location
 
     def start_requests(self):
-        """
-        Constructs the search URL dynamically.
-        """
         params = {
             'q': self.keyword,
             'l': self.location,
-            'sort': 'date'  # Get newest jobs first
+            'sort': 'date'
         }
         url = f"https://www.indeed.com/jobs?{urlencode(params)}"
 
-        # UPDATE 1: Add impersonate meta key here
+        # Use 'chrome110' which is often more stable for this library
         yield scrapy.Request(
             url=url,
             callback=self.parse,
-            meta={'impersonate': 'chrome120'}
+            meta={'impersonate': 'chrome110'}
         )
 
     custom_settings = {
-        # Mimic a FULL modern browser (Chrome 120 on Windows)
-        'DEFAULT_REQUEST_HEADERS': {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8',
-            'Accept-Language': 'en-US,en;q=0.9',
-            'Accept-Encoding': 'gzip, deflate, br',
-            'Connection': 'keep-alive',
-            'Upgrade-Insecure-Requests': '1',
-            'Sec-Fetch-Dest': 'document',
-            'Sec-Fetch-Mode': 'navigate',
-            'Sec-Fetch-Site': 'same-origin',
-            'Sec-Fetch-User': '?1',
-            'Cache-Control': 'max-age=0',
-            # --- CRITICAL MISSING HEADERS (Client Hints) ---
-            'Sec-Ch-Ua': '"Not_A Brand";v="8", "Chromium";v="120", "Google Chrome";v="120"',
-            'Sec-Ch-Ua-Mobile': '?0',
-            'Sec-Ch-Ua-Platform': '"Windows"',
-            'Referer': 'https://www.indeed.com/',
-        },
+        # REMOVED: DEFAULT_REQUEST_HEADERS (Let impersonate handle it!)
+        # We only keep essential Scrapy settings
         'DOWNLOAD_DELAY': 5,
         'RANDOMIZE_DOWNLOAD_DELAY': True,
         'COOKIES_ENABLED': True,
@@ -64,51 +44,34 @@ class IndeedSpider(scrapy.Spider):
     }
 
     def parse(self, response):
-        """
-        Parse the Search Results Page.
-        Strategy: Extract the 'jk' (Job Key) to build a clean ViewJob URL.
-        """
-        # Look for the main job cards
-        # Indeed CSS classes are messy (e.g. 'job_seen_beacon'), so we look for data attributes
         job_cards = response.css('td.resultContent')
 
         if not job_cards:
             self.logger.warning(f"⚠️ No jobs found or blocked (Status: {response.status})")
 
         for card in job_cards:
-            # 1. Extract the Job Key (jk) from the anchor tag
-            # URL usually looks like: /rc/clk?jk=12345...
             href = card.css('h2.jobTitle a::attr(href)').get()
-
             if href:
-                # Extract the 'jk' parameter using Regex
                 jk_match = re.search(r'jk=([a-zA-Z0-9]+)', href)
-
                 if jk_match:
                     jk = jk_match.group(1)
-                    # Construct a clean "View Job" URL
-                    # This bypasses all the tracking redirect mess
                     job_url = f"https://www.indeed.com/viewjob?jk={jk}"
 
-                    # UPDATE 2: Add impersonate meta key to job details request
                     yield scrapy.Request(
                         job_url,
                         callback=self.parse_detail,
                         meta={
                             'listing_url': job_url,
-                            'impersonate': 'chrome120'
+                            'impersonate': 'chrome110'  # Consistent fingerprint
                         }
                     )
 
-        # 2. Pagination (Find the 'Next' button)
-        # Usually has aria-label="Next" or data-testid="pagination-page-next"
         next_page = response.css('a[data-testid="pagination-page-next"]::attr(href)').get()
         if next_page:
-            # UPDATE 3: Add impersonate meta key to pagination
             yield response.follow(
                 next_page,
                 callback=self.parse,
-                meta={'impersonate': 'chrome120'}
+                meta={'impersonate': 'chrome110'}
             )
 
     def parse_detail(self, response):
