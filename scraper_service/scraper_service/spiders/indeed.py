@@ -15,27 +15,24 @@ class IndeedSpider(scrapy.Spider):
         self.location = location
 
     def start_requests(self):
-        # We use 'safari15_5' because it is highly stable and often bypasses Indeed blocks
-        # better than Chrome fingerprints.
+        # Visit Homepage first to get cookies
         yield scrapy.Request(
             url="https://www.indeed.com/",
             callback=self.parse_home,
+            # We use Safari because it has a distinct TLS fingerprint that Indeed trusts
             meta={'impersonate': 'safari15_5'},
             dont_filter=True
         )
 
     def parse_home(self, response):
-        params = {
-            'q': self.keyword,
-            'l': self.location,
-            'sort': 'date'
-        }
+        params = {'q': self.keyword, 'l': self.location, 'sort': 'date'}
         search_url = f"https://www.indeed.com/jobs?{urlencode(params)}"
 
         yield scrapy.Request(
             url=search_url,
             callback=self.parse_search,
             meta={'impersonate': 'safari15_5'},
+            # Do NOT manually set User-Agent here. The library handles it.
             headers={
                 'Referer': 'https://www.indeed.com/',
                 'Sec-Fetch-Site': 'same-origin',
@@ -48,6 +45,7 @@ class IndeedSpider(scrapy.Spider):
         job_cards = response.css('td.resultContent')
 
         if not job_cards:
+            # If this triggers, your IP might be blacklisted
             self.logger.warning(f"⚠️ No jobs found on {response.url} (Status: {response.status})")
 
         for card in job_cards:
