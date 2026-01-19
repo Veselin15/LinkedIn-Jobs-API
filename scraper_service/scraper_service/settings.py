@@ -64,14 +64,6 @@ CONCURRENT_REQUESTS_PER_DOMAIN = 1
 
 # Enable or disable downloader middlewares
 # See https://docs.scrapy.org/en/latest/topics/downloader-middleware.html
-DOWNLOADER_MIDDLEWARES = {
-    # 1. ENABLE the default UserAgent middleware (so it uses the one defined in settings)
-    'scrapy.downloadermiddlewares.useragent.UserAgentMiddleware': 400,
-
-    # 2. DISABLE the RandomUserAgent middleware (It gives you bad, old agents)
-    'scrapy_user_agents.middlewares.RandomUserAgentMiddleware': None,
-}
-
 # Enable or disable extensions
 # See https://docs.scrapy.org/en/latest/topics/extensions.html
 # EXTENSIONS = {
@@ -108,10 +100,20 @@ ITEM_PIPELINES = {
 # Set settings whose default value is deprecated to a future-proof value
 FEED_EXPORT_ENCODING = "utf-8"
 # --- IMPERSONATE SETTINGS (Bypass TLS Fingerprinting) ---
+DOWNLOADER_MIDDLEWARES = {
+    # 1. Disable Scrapy's default UserAgent middleware (It causes the mismatch!)
+    'scrapy.downloadermiddlewares.useragent.UserAgentMiddleware': None,
+
+    # 2. Ensure RandomUserAgent is also disabled
+    'scrapy_user_agents.middlewares.RandomUserAgentMiddleware': None,
+
+    # 3. Enable Retry (Good practice)
+    'scrapy.downloadermiddlewares.retry.RetryMiddleware': 550,
+}
+# 2. Ensure TLS Handler is SET
 DOWNLOAD_HANDLERS = {
     "http": "scrapy_impersonate.ImpersonateDownloadHandler",
     "https": "scrapy_impersonate.ImpersonateDownloadHandler",
 }
 
-# Ensure we use the Asyncio Reactor (Required for impersonate)
 TWISTED_REACTOR = "twisted.internet.asyncioreactor.AsyncioSelectorReactor"
