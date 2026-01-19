@@ -16,3 +16,8 @@ gunicorn
 brotli
 curl-cffi>=0.5.10
 scrapy-impersonate
+requests
+requests-oauthlib
+PyJWT[crypto]
+# FIX: Use the correct package name and pin version for stability
+django-allauth==65.1.0

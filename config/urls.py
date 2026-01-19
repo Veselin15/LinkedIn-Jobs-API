@@ -4,7 +4,6 @@ from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
 from django.contrib.sitemaps.views import sitemap
 from jobs.sitemaps import JobSitemap
 
-
 sitemaps = {
     'jobs': JobSitemap,
 }
@@ -16,7 +15,7 @@ urlpatterns = [
     path('', include('core.urls')),
 
     # 2. Authentication (Login/Logout)
-    path('accounts/', include('django.contrib.auth.urls')),
+    path('accounts/', include('allauth.urls')),
 
     # 3. The Jobs API
     # (We mount this at 'api/', so it finds 'api/jobs/' and 'api/scrape/')
@@ -29,4 +28,5 @@ urlpatterns = [
     path('api/schema/', SpectacularAPIView.as_view(), name='schema'),
     path('api/docs/', SpectacularSwaggerView.as_view(url_name='schema'), name='swagger-ui'),
     path('sitemap.xml', sitemap, {'sitemaps': sitemaps}, name='django.contrib.sitemaps.views.sitemap'),
+
 ]
