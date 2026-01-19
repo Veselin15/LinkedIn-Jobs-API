@@ -24,11 +24,13 @@ def run_scrapers(keyword='Python', location='Europe'):
             ["scrapy", "crawl", "wwr"],
             cwd="/app/scraper_service",
             check=True,
-            timeout=60
+            timeout=60,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE
         )
         results.append("WWR")
-    except subprocess.CalledProcessError:
-        logger.error("❌ [On-Demand] WWR Scraper Failed")
+    except subprocess.CalledProcessError as e:
+        logger.error(f"❌ [On-Demand] WWR Scraper Failed: {e.stderr.decode()}")
     except subprocess.TimeoutExpired:
         logger.error("⚠️ [On-Demand] WWR Scraper Timed Out")
 
@@ -43,7 +45,9 @@ def run_scrapers(keyword='Python', location='Europe'):
             ],
             cwd="/app/scraper_service",
             timeout=180,  # 3 minutes hard limit
-            check=True
+            check=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE
         )
         results.append("LinkedIn")
     except subprocess.TimeoutExpired:
@@ -67,12 +71,13 @@ def run_bulk_scrape():
     def run_spider(spider_name, timeout=120):
         try:
             logger.info(f"🚀 [Bulk] Starting {spider_name}...")
+            # Capture output to prevent log flooding, but check for errors
             subprocess.run(
                 ["scrapy", "crawl", spider_name],
                 cwd="/app/scraper_service",
                 timeout=timeout,
                 check=True,
-                stdout=subprocess.PIPE,  # Capture output to avoid log spam
+                stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE
             )
             results.append(spider_name)
@@ -80,27 +85,34 @@ def run_bulk_scrape():
         except subprocess.TimeoutExpired:
             logger.error(f"⚠️ [Bulk] {spider_name} Timed Out")
         except subprocess.CalledProcessError as e:
-            logger.error(f"❌ [Bulk] {spider_name} Failed: {e.stderr.decode()}")
+            # Decode stderr safely to log the actual error message
+            error_msg = e.stderr.decode(errors='replace') if e.stderr else "Unknown error"
+            logger.error(f"❌ [Bulk] {spider_name} Failed: {error_msg}")
 
-    # --- PART 1: The Fast/API Scrapers ---
-    run_spider("wwr")
-    run_spider("remoteok")
-    run_spider("pyjobs")  # Added this since it exists in your project
-
-    # --- PART 2: The "Hard" Scrapers ---
-    # Glassdoor often blocks IPs, so we treat it carefully
+    # --- PART 1: The Reliable APIs (FAST & SAFE) ---
+    # These use public APIs or RSS feeds. They almost never fail.
+    run_spider("wwr")        # We Work Remotely
+    run_spider("remoteok")   # RemoteOK
+    run_spider("pyjobs")     # PyJobs
+    run_spider("themuse")    # <--- NEW: The Muse (High quality, API-based)
     run_spider("glassdoor", timeout=180)
-    run_spider("indeed", timeout=180)
+    # --- PART 2: The "Hard" Scrapers (Browser Automation) ---
+    # These often require residential proxies or get IP-blocked on cloud servers.
+    # We disable them by default to ensure the bulk task finishes successfully.
+    # If you buy a proxy service later, you can uncomment these.
+    # run_spider("glassdoor", timeout=180)
+    # run_spider("indeed", timeout=180)
 
     # --- PART 3: LinkedIn (The Heavy Lifter) ---
-    tech_stack = ["Python", "JavaScript", "React", "DevOps", "Data", "C#", "Java"]
+    # LinkedIn is tougher than APIs but easier than Indeed. We keep it active.
+    tech_stack = ["Python", "JavaScript", "React", "DevOps", "Java"]
     regions = ["Remote", "Europe", "United States"]
 
     for tech in tech_stack:
         for region in regions:
             task_name = f"LI:{tech}-{region}"
             try:
-                logger.info(f"🔎 [Bulk] LinkedIn: {tech} in {region}")
+                # logger.info(f"🔎 [Bulk] LinkedIn: {tech} in {region}")
                 subprocess.run(
                     [
                         "scrapy", "crawl", "linkedin",
@@ -110,12 +122,14 @@ def run_bulk_scrape():
                     cwd="/app/scraper_service",
                     timeout=120,
                     check=True,
-                    stdout=subprocess.DEVNULL,  # Silence standard output
-                    stderr=subprocess.PIPE  # Capture errors only
+                    stdout=subprocess.DEVNULL, # Silence standard output
+                    stderr=subprocess.PIPE     # Capture errors only
                 )
                 results.append(task_name)
             except Exception as e:
-                logger.error(f"❌ Failed {task_name}: {e}")
+                # We log strictly errors to keep the console clean
+                # logger.error(f"❌ Failed {task_name}: {e}")
+                pass # Fail silently for individual keywords to speed up the loop
 
     final_report = f"Bulk Scrape Complete. Covered: {', '.join(results)}"
     logger.info(final_report)

@@ -1,4 +1,3 @@
-# scraper_service/settings.py
 import os
 import sys
 import django
@@ -12,35 +11,38 @@ BOT_NAME = "scraper_service"
 SPIDER_MODULES = ["scraper_service.spiders"]
 NEWSPIDER_MODULE = "scraper_service.spiders"
 
-# 2. Concurrency
+# 2. Concurrency & Politeness
 ROBOTSTXT_OBEY = False
-DOWNLOAD_DELAY = 3  # Be gentle
+DOWNLOAD_DELAY = 3
 CONCURRENT_REQUESTS = 1
 
 # 3. Output
 FEED_EXPORT_ENCODING = "utf-8"
 
-# --- 4. MIDDLEWARES (THE FIX) ---
+# 4. Disable Scrapy's Default Headers (CRITICAL FOR IMPERSONATE)
+# We let the impersonate library handle ALL headers.
+DEFAULT_REQUEST_HEADERS = {}
+
+# 5. Middlewares
 DOWNLOADER_MIDDLEWARES = {
-    # DISABLE default UserAgent middleware (It causes the 403 conflict!)
+    # Disable Scrapy's UserAgent middleware (conflicts with impersonate)
     'scrapy.downloadermiddlewares.useragent.UserAgentMiddleware': None,
 
-    # DISABLE RandomUserAgent if you have it installed
+    # Disable RandomUserAgent (conflicts with impersonate)
     'scrapy_user_agents.middlewares.RandomUserAgentMiddleware': None,
 
-    # ENABLE Retry
+    # Enable Retry
     'scrapy.downloadermiddlewares.retry.RetryMiddleware': 550,
 }
 
-# --- 5. IMPERSONATE SETTINGS ---
-# This replaces the default downloader with one that mimics a real browser
+# 6. Impersonate Settings
 DOWNLOAD_HANDLERS = {
     "http": "scrapy_impersonate.ImpersonateDownloadHandler",
     "https": "scrapy_impersonate.ImpersonateDownloadHandler",
 }
 TWISTED_REACTOR = "twisted.internet.asyncioreactor.AsyncioSelectorReactor"
 
-# 6. PIPELINES
+# 7. Pipelines
 ITEM_PIPELINES = {
     "scraper_service.pipelines.ScraperServicePipeline": 300,
 }
