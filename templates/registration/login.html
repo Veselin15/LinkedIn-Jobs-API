@@ -1,6 +1,6 @@
 {% extends 'base.html' %}
 {% load static %}
-{% block content %}
+{% load socialaccount %} {% block content %}
     <div class="relative min-h-[calc(100vh-4rem)] flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 overflow-hidden">
 
         <div class="absolute top-[-10%] left-[-10%] w-[500px] h-[500px] bg-indigo-500/20 blur-[120px] rounded-full mix-blend-screen pointer-events-none"></div>
@@ -26,55 +26,75 @@
 
                 <div class="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"></div>
 
-                <form class="space-y-6 relative z-10" method="POST">
-                    {% csrf_token %}
+                <div class="relative z-10 space-y-6">
 
-                    {% if form.errors %}
-                        <div class="p-4 rounded-xl bg-red-500/10 border border-red-500/20 flex items-start gap-3 animate-fade-in-up">
-                            <svg class="w-5 h-5 text-red-400 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24"
-                                 stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                      d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                            </svg>
-                            <div class="text-sm text-red-200">
-                                <strong class="font-bold text-red-400 block mb-1">Login Failed</strong>
-                                Please check your credentials and try again.
-                            </div>
+                    <a href="{% provider_login_url 'google' %}"
+                       class="w-full flex justify-center items-center gap-3 py-3.5 px-4 border border-slate-700/50 rounded-xl shadow-lg bg-white text-sm font-bold text-slate-900 hover:bg-slate-50 transition-all transform hover:-translate-y-0.5 active:scale-95">
+                        <img src="https://www.svgrepo.com/show/475656/google-color.svg" class="h-5 w-5" alt="Google">
+                        Continue with Google
+                    </a>
+
+                    <div class="relative">
+                        <div class="absolute inset-0 flex items-center">
+                            <div class="w-full border-t border-slate-700"></div>
                         </div>
-                    {% endif %}
-
-                    <div class="space-y-5">
-                        <div class="space-y-1.5">
-                            <label for="id_username" class="block text-sm font-medium text-slate-300 ml-1">Email or
-                                Username</label>
-                            <div class="relative">
-                                <input id="id_username" name="username" type="text" required
-                                       class="block w-full rounded-xl border border-slate-700 bg-slate-950/50 text-white placeholder-slate-500 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 sm:text-sm px-4 py-3.5 transition-all hover:border-slate-600 focus:bg-slate-950/80 shadow-inner"
-                                       placeholder="you@example.com">
-                            </div>
-                        </div>
-
-                        <div class="space-y-1.5">
-                            <div class="flex items-center justify-between ml-1">
-                                <label for="id_password"
-                                       class="block text-sm font-medium text-slate-300">Password</label>
-                                <a href="{% url 'password_reset' %}"
-                                   class="text-xs font-medium text-indigo-400 hover:text-indigo-300 transition-colors">Forgot
-                                    password?</a>
-                            </div>
-                            <div class="relative">
-                                <input id="id_password" name="password" type="password" required
-                                       class="block w-full rounded-xl border border-slate-700 bg-slate-950/50 text-white placeholder-slate-500 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 sm:text-sm px-4 py-3.5 transition-all hover:border-slate-600 focus:bg-slate-950/80 shadow-inner"
-                                       placeholder="••••••••">
-                            </div>
+                        <div class="relative flex justify-center text-sm">
+                            <span class="px-2 bg-slate-900/80 text-slate-500 backdrop-blur-xl">
+                                Or continue with email
+                            </span>
                         </div>
                     </div>
 
-                    <button type="submit"
-                            class="w-full flex justify-center py-3.5 px-4 border border-transparent rounded-xl shadow-lg shadow-indigo-500/20 text-sm font-bold text-white bg-indigo-600 hover:bg-indigo-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-slate-900 focus:ring-indigo-500 transition-all transform hover:-translate-y-0.5 active:scale-95 mt-2">
-                        Sign in
-                    </button>
-                </form>
+                    <form class="space-y-6" method="POST">
+                        {% csrf_token %}
+
+                        {% if form.errors %}
+                            <div class="p-4 rounded-xl bg-red-500/10 border border-red-500/20 flex items-start gap-3 animate-fade-in-up">
+                                <svg class="w-5 h-5 text-red-400 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24"
+                                     stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                          d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                </svg>
+                                <div class="text-sm text-red-200">
+                                    <strong class="font-bold text-red-400 block mb-1">Login Failed</strong>
+                                    Please check your credentials and try again.
+                                </div>
+                            </div>
+                        {% endif %}
+
+                        <div class="space-y-5">
+                            <div class="space-y-1.5">
+                                <label for="id_username" class="block text-sm font-medium text-slate-300 ml-1">Email or
+                                    Username</label>
+                                <div class="relative">
+                                    <input id="id_username" name="username" type="text" required
+                                           class="block w-full rounded-xl border border-slate-700 bg-slate-950/50 text-white placeholder-slate-500 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 sm:text-sm px-4 py-3.5 transition-all hover:border-slate-600 focus:bg-slate-950/80 shadow-inner"
+                                           placeholder="you@example.com">
+                                </div>
+                            </div>
+
+                            <div class="space-y-1.5">
+                                <div class="flex items-center justify-between ml-1">
+                                    <label for="id_password"
+                                           class="block text-sm font-medium text-slate-300">Password</label>
+                                    <a href="{% url 'password_reset' %}"
+                                       class="text-xs font-medium text-indigo-400 hover:text-indigo-300 transition-colors">Forgot
+                                        password?</a>
+                                </div>
+                                <div class="relative">
+                                    <input id="id_password" name="password" type="password" required
+                                           class="block w-full rounded-xl border border-slate-700 bg-slate-950/50 text-white placeholder-slate-500 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 sm:text-sm px-4 py-3.5 transition-all hover:border-slate-600 focus:bg-slate-950/80 shadow-inner"
+                                           placeholder="••••••••">
+                                </div>
+                            </div>
+                        </div>
+
+                        <button type="submit"
+                                class="w-full flex justify-center py-3.5 px-4 border border-transparent rounded-xl shadow-lg shadow-indigo-500/20 text-sm font-bold text-white bg-indigo-600 hover:bg-indigo-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-slate-900 focus:ring-indigo-500 transition-all transform hover:-translate-y-0.5 active:scale-95 mt-2">
+                            Sign in
+                        </button>
+                    </form>
+                </div>
             </div>
 
             <p class="text-center text-sm text-slate-500">
