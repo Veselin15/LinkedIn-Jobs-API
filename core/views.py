@@ -31,7 +31,7 @@ def developer_guide(request):
     if request.user.is_authenticated:
         # Try to find an existing key to show the prefix
         # We use "user-{id}" naming convention for uniqueness
-        api_key = APIKey.objects.filter(name=f"user-{request.user.id}").first()
+        api_key = APIKey.objects.filter(name=request.user.email).first()
 
         context['has_key'] = api_key is not None
         context['key_prefix'] = api_key.prefix if api_key else "YOUR_PREFIX"
@@ -118,7 +118,7 @@ def dashboard(request):
     The Money Page. Users manage their subscription and keys here.
     """
     # 1. Get API Key info (using user ID for consistent naming)
-    api_key = APIKey.objects.filter(name=f"user-{request.user.id}").first()
+    api_key = APIKey.objects.filter(name=request.user.email).first()
 
     # 2. Mock "Premium" status (In reality, check a 'Subscription' model)
     # For now, if they have an API key, we treat them as "Premium/Developer"
@@ -144,10 +144,9 @@ def regenerate_api_key(request):
     Allows a user to revoke their old key and get a new one.
     """
     # Delete old key
-    APIKey.objects.filter(name=f"user-{request.user.id}").delete()
+    APIKey.objects.filter(name=request.user.email).delete()
 
-    # Create new key
-    api_key, key_string = APIKey.objects.create_key(name=f"user-{request.user.id}")
+    api_key, key_string = APIKey.objects.create_key(name=request.user.email)
 
     # Using Django Messages to show the key ONCE
     messages.success(request, f"New API Key generated! Save it now: {key_string}")
