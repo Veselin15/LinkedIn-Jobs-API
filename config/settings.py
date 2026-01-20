@@ -40,6 +40,10 @@ else:
     ALLOWED_HOSTS = os.environ.get("ALLOWED_HOSTS", "techjobsdata.com").split(",")
 SITE_URL = 'https://techjobsdata.com'
 # Application definition
+if DEBUG:
+    CSRF_TRUSTED_ORIGINS = ["http://localhost:8000"]
+else:
+    CSRF_TRUSTED_ORIGINS = os.environ.get("CSRF_TRUSTED_ORIGINS", "https://techjobsdata.com").split(",")
 
 INSTALLED_APPS = [
     'django.contrib.admin',
