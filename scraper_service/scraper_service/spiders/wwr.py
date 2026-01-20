@@ -6,7 +6,14 @@ from ..items import JobItem
 class WWRSpider(scrapy.Spider):
     name = "wwr"
     allowed_domains = ["weworkremotely.com"]
-    start_urls = ["https://weworkremotely.com/remote-jobs.rss"]
+
+    def start_requests(self):
+        # We must manually yield the request to attach the browser fingerprint
+        yield scrapy.Request(
+            "https://weworkremotely.com/remote-jobs.rss",
+            callback=self.parse,
+            meta={'impersonate': 'chrome110'}  # <--- THIS IS THE FIX
+        )
 
     def parse(self, response):
         # RSS feeds are XML. We iterate over every <item> tag.

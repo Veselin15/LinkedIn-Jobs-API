@@ -2,12 +2,17 @@ import scrapy
 from datetime import datetime
 from ..items import JobItem
 
-
 class RemoteOKSpider(scrapy.Spider):
     name = "remoteok"
     allowed_domains = ["remoteok.com"]
-    # RemoteOK has a legal RSS feed too!
-    start_urls = ["https://remoteok.com/rss"]
+
+    def start_requests(self):
+        # FIX: Use 'impersonate' to avoid 403 Forbidden blocks
+        yield scrapy.Request(
+            "https://remoteok.com/rss",
+            callback=self.parse,
+            meta={'impersonate': 'chrome110'}
+        )
 
     def parse(self, response):
         response.selector.register_namespace('content', 'http://purl.org/rss/1.0/modules/content/')
@@ -20,7 +25,7 @@ class RemoteOKSpider(scrapy.Spider):
 
             # Extract Company from title (Format: "Company: Job")
             company = "RemoteOK"
-            if ":" in title:
+            if title and ":" in title:
                 parts = title.split(":", 1)
                 company = parts[0].strip()
                 title = parts[1].strip()

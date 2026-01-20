@@ -91,8 +91,19 @@ class GlassdoorSpider(scrapy.Spider):
                     }
                 )
 
-        # Pagination
+        # --- PAGINATION FIX ---
+        # 1. Try the specific data attribute (most reliable when present)
         next_page = response.css('a[data-test="pagination-next"]::attr(href)').get()
+
+        # 2. Fallback: Common 'next' class often used in web design
+        if not next_page:
+            next_page = response.css('.next a::attr(href)').get()
+
+        # 3. Fallback: Look for any link containing "Next" text or class
+        if not next_page:
+            next_page = response.xpath(
+                '//a[contains(@class, "next") or contains(@aria-label, "Next") or contains(text(), "Next")]/@href').get()
+
         if next_page:
             yield response.follow(
                 next_page,

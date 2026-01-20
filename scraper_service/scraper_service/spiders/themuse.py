@@ -8,11 +8,16 @@ class TheMuseSpider(scrapy.Spider):
     name = "themuse"
     allowed_domains = ["themuse.com"]
 
-    # API Endpoint for "Software Engineering" jobs
-    # We ask for page 0, descending order (newest first)
-    start_urls = [
-        "https://www.themuse.com/api/public/jobs?category=Software%20Engineering&page=0&descending=true"
-    ]
+    def start_requests(self):
+        # We ask for page 0, descending order (newest first)
+        url = "https://www.themuse.com/api/public/jobs?category=Software%20Engineering&page=0&descending=true"
+
+        # FIX: Use 'impersonate' to look like a real browser
+        yield scrapy.Request(
+            url,
+            callback=self.parse,
+            meta={'impersonate': 'chrome110'}
+        )
 
     def parse(self, response):
         data = json.loads(response.text)
@@ -26,7 +31,7 @@ class TheMuseSpider(scrapy.Spider):
             except (ValueError, TypeError):
                 posted_at = datetime.now().date()
 
-            # Parse Location (It's a list of objects)
+            # Parse Location
             locations = [loc.get('name') for loc in job.get('locations', [])]
             location_str = ", ".join(locations) if locations else "Remote"
 
@@ -35,24 +40,27 @@ class TheMuseSpider(scrapy.Spider):
                 title=job.get('name'),
                 company=job.get('company', {}).get('name'),
                 location=location_str,
-                # The landing page is the application URL
                 url=job.get('refs', {}).get('landing_page'),
                 posted_at=posted_at,
-                # The 'contents' field has the full HTML description
                 description=job.get('contents'),
                 source="TheMuse",
-                skills=[],  # Our pipeline will extract skills from the description automatically
-                salary_min=None,  # The Muse API rarely includes salary data in the public feed
+                skills=[],
+                salary_min=None,
                 salary_max=None,
                 currency="USD"
             )
 
-        # 2. Pagination (Check if there is a next page)
-        # The API returns 'page_count' and current 'page'
+        # 2. Pagination
         current_page = data.get('page', 0)
         page_count = data.get('page_count', 0)
 
         if current_page < page_count - 1:
             next_page = current_page + 1
             next_url = f"https://www.themuse.com/api/public/jobs?category=Software%20Engineering&page={next_page}&descending=true"
-            yield scrapy.Request(next_url, callback=self.parse)
+
+            # FIX: Ensure the next page also uses impersonation
+            yield scrapy.Request(
+                next_url,
+                callback=self.parse,
+                meta={'impersonate': 'chrome110'}
+            )

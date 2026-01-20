@@ -3,24 +3,28 @@ from datetime import date
 
 
 class RemotePythonSpider(scrapy.Spider):
-    # FIX: Change name from "remote_python" to "pyjobs" to match the filename and task
     name = "pyjobs"
+    allowed_domains = ["python.org"]
 
-    # We are switching to python.org because it is very stable for learning
-    start_urls = ["https://www.python.org/jobs/"]
+    def start_requests(self):
+        # FIX: Use 'impersonate' to look like a real browser
+        yield scrapy.Request(
+            "https://www.python.org/jobs/",
+            callback=self.parse,
+            meta={'impersonate': 'chrome110'}
+        )
 
     def parse(self, response):
         # Python.org lists jobs in an <ol> with class 'list-recent-jobs'
         for job in response.css("ol.list-recent-jobs li"):
-            # Extracting the 'a' tag which contains the title and link
             title_tag = job.css("h2.listing-company a")
 
-            # Extract company name (it's often inside a span with class 'listing-company-name')
-            # We strip() to remove extra whitespace/newlines
+            # Extract company name
             company_text = job.css("span.listing-company-name::text").getall()
-            # join helps if the text is split across multiple lines
             company = "".join(company_text).strip().split('\n')[-1].strip()
 
+            # Note: Returning a dict is fine, your pipeline handles it.
+            # Ideally use JobItem() here too if you want to be consistent.
             yield {
                 'title': title_tag.css("::text").get(),
                 'company': company,
