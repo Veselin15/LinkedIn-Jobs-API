@@ -41,7 +41,12 @@ else:
 SITE_URL = 'https://techjobsdata.com'
 # Application definition
 if DEBUG:
-    CSRF_TRUSTED_ORIGINS = ["http://localhost:8000"]
+    CSRF_TRUSTED_ORIGINS = [
+        "http://127.0.0.1:8000", 
+        "http://localhost:8000",
+        "https://techjobsdata.com",
+	"https://www.techjobsdata.com"
+    ]
 else:
     CSRF_TRUSTED_ORIGINS = os.environ.get("CSRF_TRUSTED_ORIGINS", "https://techjobsdata.com").split(",")
 
@@ -112,15 +117,14 @@ WSGI_APPLICATION = 'config.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/6.0/ref/settings/#databases
 
-if os.environ.get("DATABASE_URL"):
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.postgresql',
-            'NAME': os.environ.get('POSTGRES_DB', 'remotejobs'),
-            'USER': os.environ.get('POSTGRES_USER', 'user'),
-            'PASSWORD': os.environ.get('POSTGRES_PASSWORD', 'password'),
-            'HOST': 'db',
-            'PORT': 5432,
+DATABASES = {
+   'default': {
+	   'ENGINE': 'django.db.backends.postgresql',
+           'NAME': os.environ.get('POSTGRES_DB', 'remotejobs'),
+           'USER': os.environ.get('POSTGRES_USER', 'user'),
+           'PASSWORD': os.environ.get('POSTGRES_PASSWORD', 'password'),
+           'HOST': 'db',
+           'PORT': 5432,
         }
     }
 
@@ -260,3 +264,13 @@ SOCIALACCOUNT_PROVIDERS = {
 
 SOCIALACCOUNT_LOGIN_ON_GET = True
 ACCOUNT_LOGOUT_ON_GET = True
+
+# SECURITY: Trust the HTTPS signal from the proxy (Cloudflare/Docker)
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
+# SECURITY: Force Allauth to use HTTPS for callback URLs
+ACCOUNT_DEFAULT_HTTP_PROTOCOL = 'https'
+
+# OPTIONAL: Ensure the session cookie works across redirects
+SESSION_COOKIE_SECURE = True
+CSRF_COOKIE_SECURE = True

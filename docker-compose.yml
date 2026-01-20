@@ -4,64 +4,86 @@ services:
   # 1. The Database (PostgreSQL)
   db:
     image: postgres:15
+    restart: always
     volumes:
       - postgres_data:/var/lib/postgresql/data
     environment:
-      - POSTGRES_DB=remotejobs
-      - POSTGRES_USER=user
-      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
     ports:
-        - "5433:5432"
+      - "5433:5432"
+
   # 2. The Message Broker (Redis)
   redis:
     image: redis:7
+    restart: always
 
   # 3. The API (Django)
   web:
-    env_file:
-      - .env
     build: .
     command: gunicorn config.wsgi:application --bind 0.0.0.0:8000
+    restart: always
     volumes:
       - .:/app
     ports:
-      - "8000:8000"
+      - "8002:8000"
     depends_on:
       - db
       - redis
-    environment:
-      - CELERY_BROKER_URL=redis://redis:6379/0
-      - DATABASE_URL=postgres://user:password@db:5432/remotejobs
-
-  # 4. The Worker (Executes the scraping tasks)
-  celery:
     env_file:
       - .env
+    environment:
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - DATABASE_URL=postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
+
+  # 4. The Worker
+  celery:
     build: .
     command: celery -A config worker --loglevel=info
+    restart: always
     volumes:
       - .:/app
     depends_on:
       - db
       - redis
+    env_file:
+      - .env
     environment:
       - CELERY_BROKER_URL=redis://redis:6379/0
-      - DATABASE_URL=postgres://user:password@db:5432/remotejobs
+      - DATABASE_URL=postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
 
-  # 5. The Scheduler (Triggers the scraper every X hours)
+  # 5. The Scheduler
   celery-beat:
     build: .
     command: celery -A config beat --loglevel=info
+    restart: always
     volumes:
       - .:/app
     depends_on:
       - redis
-    # ADD THESE TWO LINES:
     env_file:
       - .env
-    # --------------------
     environment:
       - CELERY_BROKER_URL=redis://redis:6379/0
 
+  # 6. Cloudflare Tunnel
+  tunnel:
+    image: cloudflare/cloudflared:latest
+    restart: always
+    command: tunnel run --protocol http2
+    environment:
+      - TUNNEL_TOKEN=${TUNNEL_TOKEN}
+    volumes:
+      - /home/veski4a/.cloudflared:/etc/cloudflared
+    depends_on:
+      - web
+
 volumes:
   postgres_data:
+
+networks:
+  default:
+    driver: bridge
+    driver_opts:
+      com.docker.network.driver.mtu: "1280"
