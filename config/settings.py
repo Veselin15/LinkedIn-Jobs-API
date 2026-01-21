@@ -15,21 +15,14 @@ from celery import Celery
 from celery.schedules import crontab
 from django.core.exceptions import ImproperlyConfigured
 
-def get_env_variable(var_name):
-    try:
-        return os.environ[var_name]
-    except KeyError:
-        error_msg = f"Set the {var_name} environment variable"
-        raise ImproperlyConfigured(error_msg)
 
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
-
-SECRET_KEY = get_env_variable('DJANGO_SECRET_KEY')
+import os
+# Use the environment variable if available, otherwise use a default for dev
+SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', 'django-insecure-dev-key-for-localhost-12345')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -45,7 +38,7 @@ if DEBUG:
         "http://127.0.0.1:8000", 
         "http://localhost:8000",
         "https://techjobsdata.com",
-	"https://www.techjobsdata.com"
+	    "https://www.techjobsdata.com"
     ]
 else:
     CSRF_TRUSTED_ORIGINS = os.environ.get("CSRF_TRUSTED_ORIGINS", "https://techjobsdata.com").split(",")
@@ -182,12 +175,12 @@ REST_FRAMEWORK = {
         'rest_framework.permissions.AllowAny',
     ],
 
-    # --- DELETE THESE LINES BELOW ---
-    # 'DEFAULT_THROTTLE_CLASSES': [
-    #     'jobs.throttles.FreeTierThrottle',
-    #     'jobs.throttles.PremiumTierThrottle',
-    # ],
-    # ---------------------------------
+    # 2. Activate the new 3-Tier Throttling System
+    'DEFAULT_THROTTLE_CLASSES': [
+        'jobs.throttles.FreeTierThrottle',      # 20/day
+        'jobs.throttles.ProTierThrottle',       # 1,000/day
+        'jobs.throttles.BusinessTierThrottle',  # 10,000/day
+    ],
 
     'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
@@ -223,9 +216,8 @@ STRIPE_SECRET_KEY = os.environ.get('STRIPE_SECRET_KEY', 'sk_test_...')
 STRIPE_PUBLISHABLE_KEY = os.environ.get('STRIPE_PUBLISHABLE_KEY', 'pk_test_...')
 STRIPE_WEBHOOK_SECRET = os.environ.get('STRIPE_WEBHOOK_SECRET', 'whsec_...')
 
-# Premium Price ID (Create this in your Stripe Dashboard)
-STRIPE_PRICE_ID = os.environ.get('STRIPE_PRICE_ID', 'price_12345...')
-
+STRIPE_PRICE_ID_PRO = os.environ.get('STRIPE_PRICE_ID_PRO', 'price_YOUR_10_DOLLAR_ID')
+STRIPE_PRICE_ID_BUSINESS = os.environ.get('STRIPE_PRICE_ID_BUSINESS', 'price_YOUR_49_DOLLAR_ID')
 # --- EMAIL CONFIGURATION (Dev Mode) ---
 # This prints emails to the console/logs. Change to 'smtp' for production.
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'

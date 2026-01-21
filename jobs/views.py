@@ -9,7 +9,8 @@ from drf_spectacular.utils import extend_schema
 from .models import Job
 from .serializers import JobSerializer
 from .tasks import run_scrapers
-from .throttles import FreeTierThrottle, PremiumTierThrottle
+# --- UPDATED IMPORTS HERE ---
+from .throttles import FreeTierThrottle, ProTierThrottle, BusinessTierThrottle
 from .filters import JobFilter
 
 
@@ -25,8 +26,9 @@ class JobListAPI(generics.ListAPIView):
     # Allow both JSON (for API) and HTML (for Browser)
     renderer_classes = [JSONRenderer, TemplateHTMLRenderer]
 
-    # Apply Limits
-    throttle_classes = [PremiumTierThrottle, FreeTierThrottle]
+    # --- UPDATED THROTTLES HERE ---
+    # We list all of them; the code inside them determines which one applies
+    throttle_classes = [BusinessTierThrottle, ProTierThrottle, FreeTierThrottle]
 
     def list(self, request, *args, **kwargs):
         response = super().list(request, *args, **kwargs)
