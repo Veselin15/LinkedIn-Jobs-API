@@ -58,7 +58,26 @@
     </style>
 </head>
 <body class="text-slate-300 font-sans flex flex-col min-h-screen selection:bg-indigo-500 selection:text-white overflow-x-hidden">
-
+{% if messages %}
+    <div class="fixed top-1 right-5 z-50 flex flex-col gap-2">
+        {% for message in messages %}
+            <div class="flex items-center w-full max-w-xs p-4 text-gray-500 bg-white rounded-lg shadow dark:text-gray-400 dark:bg-gray-800" role="alert">
+                <div class="inline-flex items-center justify-center flex-shrink-0 w-8 h-8 text-{{ message.tags }}-500 bg-{{ message.tags }}-100 rounded-lg dark:bg-{{ message.tags }}-800 dark:text-{{ message.tags }}-200">
+                    {% if message.tags == 'error' %}
+                        <svg class="w-5 h-5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
+                            <path d="M10 .5a9.5 9.5 0 1 0 9.5 9.5A9.51 9.51 0 0 0 10 .5Zm3.707 11.793a1 1 0 1 1-1.414 1.414L10 11.414l-2.293 2.293a1 1 0 0 1-1.414-1.414L8.586 10 6.293 7.707a1 1 0 0 1 1.414-1.414L10 8.586l2.293-2.293a1 1 0 0 1 1.414 1.414L11.414 10l2.293 2.293Z"/>
+                        </svg>
+                    {% else %}
+                        <svg class="w-5 h-5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
+                            <path d="M10 .5a9.5 9.5 0 1 0 9.5 9.5A9.51 9.51 0 0 0 10 .5Zm3.707 8.207-4 4a1 1 0 0 1-1.414 0l-2-2a1 1 0 0 1 1.414-1.414L9 10.586l3.293-3.293a1 1 0 0 1 1.414 1.414Z"/>
+                        </svg>
+                    {% endif %}
+                </div>
+                <div class="ml-3 text-sm font-normal">{{ message }}</div>
+            </div>
+        {% endfor %}
+    </div>
+{% endif %}
 <nav class="fixed w-full z-50 top-0 start-0 border-b border-white/10 bg-slate-900/90 backdrop-blur-md">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex flex-wrap items-center justify-between py-4">
@@ -128,7 +147,26 @@
         </div>
     </div>
 </nav>
-
+{% if messages %}
+    <div class="fixed top-1 right-5 z-50 flex flex-col gap-2">
+        {% for message in messages %}
+            <div class="flex items-center w-full max-w-xs p-4 text-gray-500 bg-white rounded-lg shadow dark:text-gray-400 dark:bg-gray-800" role="alert">
+                <div class="inline-flex items-center justify-center flex-shrink-0 w-8 h-8 text-{{ message.tags }}-500 bg-{{ message.tags }}-100 rounded-lg dark:bg-{{ message.tags }}-800 dark:text-{{ message.tags }}-200">
+                    {% if message.tags == 'error' %}
+                        <svg class="w-5 h-5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
+                            <path d="M10 .5a9.5 9.5 0 1 0 9.5 9.5A9.51 9.51 0 0 0 10 .5Zm3.707 11.793a1 1 0 1 1-1.414 1.414L10 11.414l-2.293 2.293a1 1 0 0 1-1.414-1.414L8.586 10 6.293 7.707a1 1 0 0 1 1.414-1.414L10 8.586l2.293-2.293a1 1 0 0 1 1.414 1.414L11.414 10l2.293 2.293Z"/>
+                        </svg>
+                    {% else %}
+                        <svg class="w-5 h-5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
+                            <path d="M10 .5a9.5 9.5 0 1 0 9.5 9.5A9.51 9.51 0 0 0 10 .5Zm3.707 8.207-4 4a1 1 0 0 1-1.414 0l-2-2a1 1 0 0 1 1.414-1.414L9 10.586l3.293-3.293a1 1 0 0 1 1.414 1.414Z"/>
+                        </svg>
+                    {% endif %}
+                </div>
+                <div class="ml-3 text-sm font-normal">{{ message }}</div>
+            </div>
+        {% endfor %}
+    </div>
+{% endif %}
 <div class="h-20"></div>
 
 <main class="flex-grow relative z-10">
