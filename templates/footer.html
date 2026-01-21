@@ -5,27 +5,27 @@
 
             <div class="col-span-1 md:col-span-1">
                 <a href="/" class="flex items-center gap-3 z-50">
-                    <img src="{% static 'img/logo.png' %}"
-                         alt="TechJobsData"
-                         class="h-10 w-auto object-contain">
+                    <img src="{% static 'img/logo.png' %}" alt="TechJobsData" class="h-10 w-auto object-contain">
                     <span class="text-xl font-bold text-white tracking-tight hover:text-indigo-400 transition-colors">TechJobsData</span>
                 </a>
-                <p class="mt-2 text-sm text-slate-500">
+                <p class="mt-4 text-sm text-slate-500">
                     The #1 API for real-time remote job data. Built for developers, by developers.
                 </p>
+                <div class="mt-6 text-xs text-slate-600 space-y-1">
+                    <p>TechJobsData Inc.</p>
+                    <p>Dobrotitsa 34 D</p>
+                    <p>Dobrich, Bulgaria 9300</p>
+                    <p class="mt-2 text-indigo-400">support@techjobsdata.com</p>
+                </div>
             </div>
 
             <div>
                 <h3 class="text-sm font-semibold text-white tracking-wider uppercase">Product</h3>
                 <ul class="mt-4 space-y-3">
-                    <li><a href="{% url 'job_list' %}" class="text-sm hover:text-indigo-400 transition-colors">Browse
-                        Jobs</a></li>
-                    <li><a href="{% url 'developer_guide' %}" class="text-sm hover:text-indigo-400 transition-colors">Documentation</a>
-                    </li>
+                    <li><a href="{% url 'job_list' %}" class="text-sm hover:text-indigo-400 transition-colors">Browse Jobs</a></li>
+                    <li><a href="{% url 'developer_guide' %}" class="text-sm hover:text-indigo-400 transition-colors">Documentation</a></li>
                     <li>
-                        <button data-modal-target="pricing-modal" data-modal-toggle="pricing-modal"
-                                class="text-sm hover:text-indigo-400 transition-colors">Pricing
-                        </button>
+                        <button data-modal-target="pricing-modal" data-modal-toggle="pricing-modal" class="text-sm hover:text-indigo-400 transition-colors">Pricing</button>
                     </li>
                 </ul>
             </div>
@@ -34,21 +34,20 @@
                 <h3 class="text-sm font-semibold text-white tracking-wider uppercase">Legal</h3>
                 <ul class="mt-4 space-y-3">
                     <li>
-                        <button data-modal-target="privacy-modal" data-modal-toggle="privacy-modal"
-                                class="text-sm hover:text-indigo-400 transition-colors">Privacy Policy
-                        </button>
+                        <button data-modal-target="privacy-modal" data-modal-toggle="privacy-modal" class="text-sm hover:text-indigo-400 transition-colors">Privacy Policy</button>
                     </li>
                     <li>
-                        <button data-modal-target="terms-modal" data-modal-toggle="terms-modal"
-                                class="text-sm hover:text-indigo-400 transition-colors">Terms of Service
-                        </button>
+                        <button data-modal-target="terms-modal" data-modal-toggle="terms-modal" class="text-sm hover:text-indigo-400 transition-colors">Terms of Service</button>
+                    </li>
+                    <li>
+                        <button data-modal-target="terms-modal" data-modal-toggle="terms-modal" class="text-sm hover:text-indigo-400 transition-colors">Refund Policy</button>
                     </li>
                 </ul>
             </div>
 
         </div>
         <div class="mt-12 border-t border-white/10 pt-8 text-center text-sm text-slate-600">
-            &copy; {% now "Y" %} JobsAPI Inc. All rights reserved.
+            &copy; {% now "Y" %} TechJobsData Inc. All rights reserved.
         </div>
     </div>
 </footer>
