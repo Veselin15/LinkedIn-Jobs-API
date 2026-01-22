@@ -117,14 +117,25 @@ def dashboard(request):
     """
     The Money Page. Users manage their subscription and keys here.
     """
-    # 1. Get API Key info (using user ID for consistent naming)
+    # 1. Get Subscription Status
+    sub = getattr(request.user, 'subscription', None)
+    plan_type = sub.plan_type if sub else 'free'
+    is_premium = plan_type in ['pro', 'business']
+
+    # 2. Get Existing Key
     api_key = APIKey.objects.filter(name=request.user.email).first()
 
-    # 2. Mock "Premium" status (In reality, check a 'Subscription' model)
-    # For now, if they have an API key, we treat them as "Premium/Developer"
-    is_premium = api_key is not None
+    # 3. Check for manually regenerated key
+    new_api_key = request.session.pop('new_api_key', None)
 
-    # 3. Get Saved Jobs
+    # 4. AUTO-GENERATE LOGIC (The Fix)
+    # We add "and request.GET.get('success') != 'true'"
+    # This prevents the key from being created during the "Syncing" reload.
+    if is_premium and not api_key and request.GET.get('success') != 'true':
+        api_key, key_string = APIKey.objects.create_key(name=request.user.email)
+        new_api_key = key_string
+
+    # 5. Get Saved Jobs
     saved_jobs = SavedJob.objects.filter(user=request.user).select_related('job').order_by('-created_at')
 
     context = {
@@ -133,6 +144,7 @@ def dashboard(request):
         'key_prefix': api_key.prefix if api_key else None,
         'is_premium': is_premium,
         'saved_jobs': saved_jobs,
+        'new_api_key': new_api_key,
     }
     return render(request, 'core/dashboard.html', context)
 
