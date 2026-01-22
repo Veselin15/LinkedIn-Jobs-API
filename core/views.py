@@ -160,8 +160,11 @@ def regenerate_api_key(request):
 
     api_key, key_string = APIKey.objects.create_key(name=request.user.email)
 
-    # Using Django Messages to show the key ONCE
-    messages.success(request, f"New API Key generated! Save it now: {key_string}")
+    # --- THE FIX ---
+    # Store the key in the session so the dashboard view can 'pop' it and show it to the user.
+    request.session['new_api_key'] = key_string
+
+    messages.success(request, "New API Key generated successfully!")
     return redirect('dashboard')
 
 
