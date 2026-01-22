@@ -190,7 +190,7 @@ REST_FRAMEWORK = {
 }
 
 SPECTACULAR_SETTINGS = {
-    'TITLE': 'Remote Jobs API',
+    'TITLE': 'TechJobsData API',  # <--- Changed from 'Remote Jobs API'
     'DESCRIPTION': 'A specialized API for finding remote tech jobs on LinkedIn.',
     'VERSION': '1.0.0',
 }
@@ -223,7 +223,7 @@ STRIPE_PRICE_ID_BUSINESS = os.environ.get('STRIPE_PRICE_ID_BUSINESS', 'price_YOU
 # --- EMAIL CONFIGURATION (Dev Mode) ---
 # This prints emails to the console/logs. Change to 'smtp' for production.
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
-DEFAULT_FROM_EMAIL = 'noreply@remotejobsapi.com'
+DEFAULT_FROM_EMAIL = 'support@techjobsdata.com'
 
 LOGIN_REDIRECT_URL = '/dashboard/'
 LOGOUT_REDIRECT_URL = '/'
