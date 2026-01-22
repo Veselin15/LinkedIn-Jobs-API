@@ -37,7 +37,14 @@
 
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
 
-            <div class="lg:col-span-4 space-y-6 lg:sticky lg:top-24">
+            <details class="lg:block group lg:col-span-4 space-y-6 lg:sticky lg:top-24 open:bg-slate-900/50 open:p-4 rounded-xl lg:open:p-0 lg:open:bg-transparent" open>
+
+                <summary class="list-none lg:hidden flex items-center justify-between font-bold text-white cursor-pointer p-4 bg-slate-800 rounded-lg mb-4 hover:bg-slate-700 transition-colors">
+                    <span>Show Menu & Auth</span>
+                    <svg class="w-5 h-5 group-open:rotate-180 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                    </svg>
+                </summary>
 
                 <div class="bg-slate-900/60 border border-white/10 rounded-2xl p-6 shadow-xl backdrop-blur-sm">
                     <div class="flex items-center gap-3 mb-4">
@@ -142,7 +149,7 @@
                         </li>
                     </ul>
                 </div>
-            </div>
+            </details>
 
             <div class="lg:col-span-8 space-y-8">
 
@@ -306,4 +313,30 @@ fetchJobs();</pre>
         </div>
     </div>
 </div>
+
+<script>
+    // Script to handle desktop vs mobile behavior for the sidebar
+    function checkScreenSize() {
+        const details = document.querySelector('details');
+        if (details) {
+            if (window.innerWidth >= 1024) { // lg breakpoint
+                details.setAttribute('open', '');
+                // Optional: Disable click on desktop so it never closes
+                details.addEventListener('click', (e) => {
+                    if(window.innerWidth >= 1024) e.preventDefault();
+                });
+            } else {
+                // On mobile start closed (remove 'open' attribute)
+                // Note: We only remove it on initial load/resize if needed,
+                // but usually better to let user control it on mobile.
+                // details.removeAttribute('open');
+            }
+        }
+    }
+
+    // Run on load
+    checkScreenSize();
+    // Run on resize
+    window.addEventListener('resize', checkScreenSize);
+</script>
 {% endblock %}
