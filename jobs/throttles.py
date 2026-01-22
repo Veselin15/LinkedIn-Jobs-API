@@ -8,7 +8,7 @@ User = get_user_model()
 
 class FreeTierThrottle(SimpleRateThrottle):
     scope = 'free_tier'
-    rate = '3/min'
+    rate = '20/day'
 
     def get_cache_key(self, request, view):
         # 1. Check if it's a Browser/HTMX request (Allow)
@@ -52,7 +52,7 @@ class ProTierThrottle(SimpleRateThrottle):
     Applies ONLY if the user's Subscription is 'pro'
     """
     scope = 'pro_tier'
-    rate = '5/min'
+    rate = '1000/day'
 
     def get_cache_key(self, request, view):
         return self.check_plan_limit(request, 'pro')
@@ -91,7 +91,7 @@ class BusinessTierThrottle(SimpleRateThrottle):
     Applies ONLY if the user's Subscription is 'business'
     """
     scope = 'business_tier'
-    rate = '10/min'
+    rate = '10000/day'
 
     def get_cache_key(self, request, view):
         # Reuse logic but look for 'business' plan
