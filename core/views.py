@@ -117,15 +117,14 @@ def dashboard(request):
     """
     The Money Page. Users manage their subscription and keys here.
     """
-    # 1. Get API Key info (using user ID for consistent naming)
     api_key = APIKey.objects.filter(name=request.user.email).first()
-
-    # 2. Mock "Premium" status (In reality, check a 'Subscription' model)
-    # For now, if they have an API key, we treat them as "Premium/Developer"
     is_premium = api_key is not None
-
-    # 3. Get Saved Jobs
     saved_jobs = SavedJob.objects.filter(user=request.user).select_related('job').order_by('-created_at')
+
+    # --- NEW LOGIC START ---
+    # Check if a new key was just generated (pop it so it shows only once)
+    new_api_key = request.session.pop('new_api_key', None)
+    # --- NEW LOGIC END ---
 
     context = {
         'api_key': api_key,
@@ -133,6 +132,7 @@ def dashboard(request):
         'key_prefix': api_key.prefix if api_key else None,
         'is_premium': is_premium,
         'saved_jobs': saved_jobs,
+        'new_api_key': new_api_key, # <--- Add this to context
     }
     return render(request, 'core/dashboard.html', context)
 
@@ -143,16 +143,16 @@ def regenerate_api_key(request):
     """
     Allows a user to revoke their old key and get a new one.
     """
-    # Delete old key
     APIKey.objects.filter(name=request.user.email).delete()
-
     api_key, key_string = APIKey.objects.create_key(name=request.user.email)
 
-    # Using Django Messages to show the key ONCE
-    messages.success(request, f"New API Key generated! Save it now: {key_string}")
+    # --- NEW LOGIC START ---
+    # Store the full key in the session temporarily
+    request.session['new_api_key'] = key_string
+    messages.success(request, "New API Key generated! It is shown in the box below.")
+    # --- NEW LOGIC END ---
+
     return redirect('dashboard')
-
-
 # --- 5. Interactive Features (HTMX) ---
 
 @login_required

@@ -2,222 +2,291 @@
 {% load static %}
 
 {% block content %}
-<style>
-    .custom-scrollbar {
-        scrollbar-width: thin;
-        scrollbar-color: rgba(255, 255, 255, 0.1) transparent;
-    }
-    .custom-scrollbar::-webkit-scrollbar { width: 6px; }
-    .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
-    .custom-scrollbar::-webkit-scrollbar-thumb {
-        background-color: rgba(255, 255, 255, 0.1);
-        border-radius: 20px;
-        border: 2px solid transparent;
-        background-clip: content-box;
-    }
-</style>
+    <style>
+        .custom-scrollbar {
+            scrollbar-width: thin;
+            scrollbar-color: rgba(255, 255, 255, 0.1) transparent;
+        }
 
-<div class="relative min-h-screen pt-12 pb-24">
-    <div class="absolute top-0 left-1/4 w-96 h-96 bg-indigo-500/10 blur-[100px] rounded-full pointer-events-none mix-blend-screen"></div>
-    <div class="absolute top-0 right-1/4 w-96 h-96 bg-cyan-500/10 blur-[100px] rounded-full pointer-events-none"></div>
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+        }
 
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+        }
 
-        <div class="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-10">
-            <div class="flex items-center gap-5">
-                <div class="h-16 w-16 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white text-2xl font-bold shadow-lg shadow-indigo-500/20 border border-white/10">
-                    {{ user.username|slice:":1"|upper }}
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            border: 2px solid transparent;
+            background-clip: content-box;
+        }
+    </style>
+
+    <div class="relative min-h-screen pt-12 pb-24">
+        <div class="absolute top-0 left-1/4 w-96 h-96 bg-indigo-500/10 blur-[100px] rounded-full pointer-events-none mix-blend-screen"></div>
+        <div class="absolute top-0 right-1/4 w-96 h-96 bg-cyan-500/10 blur-[100px] rounded-full pointer-events-none"></div>
+
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-10">
+                <div class="flex items-center gap-5">
+                    <div class="h-16 w-16 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white text-2xl font-bold shadow-lg shadow-indigo-500/20 border border-white/10">
+                        {{ user.username|slice:":1"|upper }}
+                    </div>
+                    <div>
+                        <h1 class="text-3xl font-bold text-white tracking-tight">
+                            Welcome back, <span class="text-indigo-400">{% if user.first_name %}
+                            {{ user.first_name }}{% else %}{{ user.username }}{% endif %}</span>!
+                        </h1>
+                        <p class="text-slate-400">Managed your developer environment and saved jobs.</p>
+                    </div>
                 </div>
-                <div>
-                    <h1 class="text-3xl font-bold text-white tracking-tight">
-                        Welcome back, <span class="text-indigo-400">{% if user.first_name %}{{ user.first_name }}{% else %}{{ user.username }}{% endif %}</span>!
-                    </h1>
-                    <p class="text-slate-400">Managed your developer environment and saved jobs.</p>
-                </div>
-            </div>
 
-            <div class="flex items-center gap-3">
-                {% if user.subscription.plan_type == 'business' %}
-                    <span class="inline-flex items-center gap-2 rounded-xl bg-cyan-500/10 px-4 py-2 text-sm font-bold text-cyan-400 border border-cyan-500/20 shadow-lg shadow-cyan-500/5">
+                <div class="flex items-center gap-3">
+                    {% if user.subscription.plan_type == 'business' %}
+                        <span class="inline-flex items-center gap-2 rounded-xl bg-cyan-500/10 px-4 py-2 text-sm font-bold text-cyan-400 border border-cyan-500/20 shadow-lg shadow-cyan-500/5">
                         <span class="relative flex h-2 w-2">
                           <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-cyan-400 opacity-75"></span>
                           <span class="relative inline-flex rounded-full h-2 w-2 bg-cyan-500"></span>
                         </span>
                         BUSINESS PLAN
                     </span>
-                {% elif user.subscription.plan_type == 'pro' %}
-                    <span class="inline-flex items-center gap-2 rounded-xl bg-indigo-500/10 px-4 py-2 text-sm font-bold text-indigo-400 border border-indigo-500/20 shadow-lg shadow-indigo-500/5">
+                    {% elif user.subscription.plan_type == 'pro' %}
+                        <span class="inline-flex items-center gap-2 rounded-xl bg-indigo-500/10 px-4 py-2 text-sm font-bold text-indigo-400 border border-indigo-500/20 shadow-lg shadow-indigo-500/5">
                         <span class="relative flex h-2 w-2">
                           <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75"></span>
                           <span class="relative inline-flex rounded-full h-2 w-2 bg-indigo-500"></span>
                         </span>
                         PRO PLAN
                     </span>
-                {% else %}
-                    <a href="#upgrade" class="inline-flex items-center gap-2 rounded-xl bg-slate-800 px-4 py-2 text-sm font-bold text-slate-300 border border-white/5 hover:bg-slate-700 transition-colors">
-                        FREE TIER
-                    </a>
-                {% endif %}
-            </div>
-        </div>
-
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-            <div class="bg-slate-900/40 border border-white/5 p-5 rounded-2xl backdrop-blur-md">
-                <p class="text-slate-500 text-xs font-bold uppercase tracking-widest mb-1">Total Saved</p>
-                <p class="text-2xl font-bold text-white">{{ saved_jobs|length }} Jobs</p>
-            </div>
-
-            <div class="bg-slate-900/40 border border-white/5 p-5 rounded-2xl backdrop-blur-md">
-                <p class="text-slate-500 text-xs font-bold uppercase tracking-widest mb-1">Daily Limit</p>
-                <p class="text-2xl font-bold text-white">
-                    {% if user.subscription.plan_type == 'business' %}
-                        10,000
-                    {% elif user.subscription.plan_type == 'pro' %}
-                        1,000
                     {% else %}
-                        20
+                        <a href="#upgrade"
+                           class="inline-flex items-center gap-2 rounded-xl bg-slate-800 px-4 py-2 text-sm font-bold text-slate-300 border border-white/5 hover:bg-slate-700 transition-colors">
+                            FREE TIER
+                        </a>
                     {% endif %}
-                </p>
+                </div>
             </div>
 
-            <div class="bg-slate-900/40 border border-white/5 p-5 rounded-2xl backdrop-blur-md">
-                <p class="text-slate-500 text-xs font-bold uppercase tracking-widest mb-1">Account Status</p>
-                <p class="text-2xl font-bold text-green-400">Active</p>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+                <div class="bg-slate-900/40 border border-white/5 p-5 rounded-2xl backdrop-blur-md">
+                    <p class="text-slate-500 text-xs font-bold uppercase tracking-widest mb-1">Total Saved</p>
+                    <p class="text-2xl font-bold text-white">{{ saved_jobs|length }} Jobs</p>
+                </div>
+
+                <div class="bg-slate-900/40 border border-white/5 p-5 rounded-2xl backdrop-blur-md">
+                    <p class="text-slate-500 text-xs font-bold uppercase tracking-widest mb-1">Daily Limit</p>
+                    <p class="text-2xl font-bold text-white">
+                        {% if user.subscription.plan_type == 'business' %}
+                            10,000
+                        {% elif user.subscription.plan_type == 'pro' %}
+                            1,000
+                        {% else %}
+                            20
+                        {% endif %}
+                    </p>
+                </div>
+
+                <div class="bg-slate-900/40 border border-white/5 p-5 rounded-2xl backdrop-blur-md">
+                    <p class="text-slate-500 text-xs font-bold uppercase tracking-widest mb-1">Account Status</p>
+                    <p class="text-2xl font-bold text-green-400">Active</p>
+                </div>
+                <div class="bg-slate-900/40 border border-white/5 p-5 rounded-2xl backdrop-blur-md">
+                    <p class="text-slate-500 text-xs font-bold uppercase tracking-widest mb-1">API Version</p>
+                    <p class="text-2xl font-bold text-indigo-300">v1.0</p>
+                </div>
             </div>
-            <div class="bg-slate-900/40 border border-white/5 p-5 rounded-2xl backdrop-blur-md">
-                <p class="text-slate-500 text-xs font-bold uppercase tracking-widest mb-1">API Version</p>
-                <p class="text-2xl font-bold text-indigo-300">v1.0</p>
-            </div>
-        </div>
 
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
-            <div class="lg:col-span-2 space-y-6">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
+                <div class="lg:col-span-2 space-y-6">
 
-                <div class="bg-slate-900/60 border border-white/10 rounded-3xl p-8 shadow-2xl backdrop-blur-sm relative overflow-hidden group">
-                    <div class="absolute inset-0 bg-gradient-to-br from-indigo-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                    <div class="bg-slate-900/60 border border-white/10 rounded-3xl p-8 shadow-2xl backdrop-blur-sm relative overflow-hidden group">
+                        <div class="absolute inset-0 bg-gradient-to-br from-indigo-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
 
-                    <div class="flex items-center justify-between mb-8 relative z-10">
-                        <div class="flex items-center gap-4">
-                            <div class="p-3 bg-indigo-500/10 rounded-xl text-indigo-400 border border-indigo-500/20">
-                                <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"/></svg>
+                        <div class="flex items-center justify-between mb-8 relative z-10">
+                            <div class="flex items-center gap-4">
+                                <div class="p-3 bg-indigo-500/10 rounded-xl text-indigo-400 border border-indigo-500/20">
+                                    <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                              d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"/>
+                                    </svg>
+                                </div>
+                                <h2 class="text-xl font-bold text-white">API Credentials</h2>
                             </div>
-                            <h2 class="text-xl font-bold text-white">API Credentials</h2>
+                            {% if has_key %}
+                                <form action="{% url 'regenerate_api_key' %}" method="POST"
+                                      onsubmit="return confirm('Old key will stop working. Proceed?');">
+                                    {% csrf_token %}
+                                    <button type="submit"
+                                            class="text-xs font-bold text-red-400 hover:text-red-300 transition-colors bg-red-500/10 px-3 py-2 rounded-lg border border-red-500/20">
+                                        Regenerate
+                                    </button>
+                                </form>
+                            {% endif %}
                         </div>
+
                         {% if has_key %}
-                        <form action="{% url 'regenerate_api_key' %}" method="POST" onsubmit="return confirm('Old key will stop working. Proceed?');">
-                            {% csrf_token %}
-                            <button type="submit" class="text-xs font-bold text-red-400 hover:text-red-300 transition-colors bg-red-500/10 px-3 py-2 rounded-lg border border-red-500/20">Regenerate</button>
-                        </form>
+                            <div class="relative space-y-4">
+                                <div class="relative group/input">
+                                    {% if new_api_key %}
+                                        <input type="text" id="apiKeyInput" value="{{ new_api_key }}" readonly
+                                               class="block w-full rounded-xl border border-green-500/50 bg-green-500/10 text-green-300 font-mono text-sm py-4 pl-4 pr-28 focus:outline-none shadow-[0_0_15px_rgba(34,197,94,0.2)]">
+
+                                        <button onclick="copyToClipboard('{{ new_api_key }}', true)" id="copyBtn"
+                                                class="absolute top-2 right-2 bottom-2 px-4 bg-green-500 hover:bg-green-400 text-slate-900 rounded-lg text-xs font-bold transition-all shadow-lg shadow-green-500/20">
+                                            <span id="copyText">Copy Key</span>
+                                        </button>
+                                    {% else %}
+                                        <input type="text" value="{{ key_prefix }}.********************************"
+                                               readonly
+                                               class="block w-full rounded-xl border border-slate-700 bg-slate-950/80 text-slate-500 font-mono text-sm py-4 pl-4 pr-28 select-none cursor-not-allowed">
+
+                                        <div class="absolute top-2 right-2 bottom-2 px-4 flex items-center text-slate-500 text-xs font-bold border border-white/5 rounded-lg bg-white/5">
+                                            Hidden
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                {% if new_api_key %}
+                                    <p class="text-xs text-green-400 mt-2 font-bold animate-pulse">⚠️ Save this key now!
+                                        You cannot see it again.</p>
+                                {% else %}
+                                    <p class="text-xs text-slate-500 italic mt-2">Header format: Authorization: Api-Key
+                                        YOUR_KEY</p>
+                                {% endif %}
+                                <p class="text-xs text-slate-500 italic">Header format: Authorization: Api-Key
+                                    YOUR_KEY</p>
+                            </div>
+                        {% else %}
+                            <div class="text-center py-6 bg-yellow-500/5 border border-yellow-500/10 rounded-2xl">
+                                <p class="text-yellow-200/70 text-sm mb-4">You don't have an active API key.</p>
+                                <form action="{% url 'checkout' %}" method="POST">
+                                    {% csrf_token %}
+                                    <button type="submit"
+                                            class="px-6 py-2 bg-yellow-500 text-slate-900 font-bold rounded-lg hover:bg-yellow-400 transition-all">
+                                        Generate Key 🔑
+                                    </button>
+                                </form>
+                            </div>
                         {% endif %}
                     </div>
 
-                    {% if has_key %}
-                        <div class="relative space-y-4">
-                            <div class="relative group/input">
-                                <input type="text" id="apiKeyInput" value="{{ key_prefix }}.********************************" readonly
-                                       class="block w-full rounded-xl border border-slate-700 bg-slate-950/80 text-slate-300 font-mono text-sm py-4 pl-4 pr-28 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all">
-                                <button onclick="copyToClipboard('{{ key_prefix }}')" id="copyBtn"
-                                        class="absolute top-2 right-2 bottom-2 px-4 bg-white/5 hover:bg-white/10 text-slate-300 rounded-lg text-xs font-bold border border-white/5 transition-all">
-                                    <span id="copyText">Copy</span>
-                                </button>
+                    <div id="upgrade"
+                         class="bg-slate-900/60 border border-white/10 rounded-3xl p-8 shadow-2xl backdrop-blur-sm">
+                        <div class="flex items-center gap-4 mb-8">
+                            <div class="p-3 bg-green-500/10 rounded-xl text-green-400 border border-green-500/20">
+                                <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                          d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                </svg>
                             </div>
-                            <p class="text-xs text-slate-500 italic">Header format: Authorization: Api-Key YOUR_KEY</p>
+                            <h2 class="text-xl font-bold text-white">Subscription</h2>
                         </div>
-                    {% else %}
-                        <div class="text-center py-6 bg-yellow-500/5 border border-yellow-500/10 rounded-2xl">
-                            <p class="text-yellow-200/70 text-sm mb-4">You don't have an active API key.</p>
-                            <form action="{% url 'checkout' %}" method="POST">
-                                {% csrf_token %}
-                                <button type="submit" class="px-6 py-2 bg-yellow-500 text-slate-900 font-bold rounded-lg hover:bg-yellow-400 transition-all">Generate Key 🔑</button>
-                            </form>
+
+                        <div class="p-6 bg-white/5 rounded-2xl border border-white/5 flex flex-col md:flex-row justify-between items-center gap-6">
+                            <div>
+                                <p class="text-slate-500 text-xs font-bold uppercase mb-1">Current Plan</p>
+                                <p class="text-2xl font-bold text-white">
+                                    {% if user.subscription.plan_type == 'business' %}
+                                        Business (High Volume)
+                                    {% elif user.subscription.plan_type == 'pro' %}
+                                        Developer Pro
+                                    {% else %}
+                                        Hobbyist (Free)
+                                    {% endif %}
+                                </p>
+                            </div>
+                            <div class="w-full md:w-auto">
+                                {% if user.subscription.plan_type == 'pro' or user.subscription.plan_type == 'business' %}
+                                    <form action="{% url 'billing_portal' %}" method="POST">
+                                        {% csrf_token %}
+                                        <button type="submit"
+                                                class="w-full px-6 py-3 bg-white/10 hover:bg-white/20 text-white font-bold rounded-xl transition-all border border-white/10">
+                                            Manage Billing
+                                        </button>
+                                    </form>
+                                {% else %}
+                                    <div class="flex flex-col gap-2">
+                                        <button data-modal-target="pricing-modal" data-modal-toggle="pricing-modal"
+                                                class="w-full px-8 py-3 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-xl shadow-lg shadow-indigo-600/20 transition-all">
+                                            Upgrade Now
+                                        </button>
+                                    </div>
+                                {% endif %}
+                            </div>
                         </div>
-                    {% endif %}
+                    </div>
                 </div>
 
-                <div id="upgrade" class="bg-slate-900/60 border border-white/10 rounded-3xl p-8 shadow-2xl backdrop-blur-sm">
-                    <div class="flex items-center gap-4 mb-8">
-                        <div class="p-3 bg-green-500/10 rounded-xl text-green-400 border border-green-500/20">
-                            <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                <div class="lg:col-span-1">
+                    <div class="bg-slate-900/80 border border-white/10 rounded-3xl p-6 shadow-2xl backdrop-blur-md sticky top-28">
+                        <div class="flex items-center justify-between mb-6 pb-4 border-b border-white/5">
+                            <h2 class="text-lg font-bold text-white flex items-center gap-2">
+                                <svg class="w-5 h-5 text-yellow-400" fill="currentColor" viewBox="0 0 24 24">
+                                    <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/>
+                                </svg>
+                                Saved Jobs
+                            </h2>
                         </div>
-                        <h2 class="text-xl font-bold text-white">Subscription</h2>
-                    </div>
 
-                    <div class="p-6 bg-white/5 rounded-2xl border border-white/5 flex flex-col md:flex-row justify-between items-center gap-6">
-                        <div>
-                            <p class="text-slate-500 text-xs font-bold uppercase mb-1">Current Plan</p>
-                            <p class="text-2xl font-bold text-white">
-                                {% if user.subscription.plan_type == 'business' %}
-                                    Business (High Volume)
-                                {% elif user.subscription.plan_type == 'pro' %}
-                                    Developer Pro
-                                {% else %}
-                                    Hobbyist (Free)
-                                {% endif %}
-                            </p>
-                        </div>
-                        <div class="w-full md:w-auto">
-                            {% if user.subscription.plan_type == 'pro' or user.subscription.plan_type == 'business' %}
-                                <form action="{% url 'billing_portal' %}" method="POST">
-                                    {% csrf_token %}
-                                    <button type="submit" class="w-full px-6 py-3 bg-white/10 hover:bg-white/20 text-white font-bold rounded-xl transition-all border border-white/10">
-                                        Manage Billing
-                                    </button>
-                                </form>
+                        <div class="space-y-3 max-h-[500px] overflow-y-auto custom-scrollbar pr-2">
+                            {% if saved_jobs %}
+                                {% for saved in saved_jobs %}
+                                    <div class="group relative bg-white/[0.03] hover:bg-white/[0.08] border border-white/5 p-4 rounded-xl flex items-start justify-between transition-all gap-3 animate-fade-in-up">
+                                        <div class="min-w-0">
+                                            <a href="{{ saved.job.url }}" target="_blank"
+                                               class="text-sm font-bold text-white hover:text-indigo-400 block truncate transition-colors">{{ saved.job.title }}</a>
+                                            <p class="text-xs text-slate-500 truncate">{{ saved.job.company }}</p>
+                                        </div>
+                                        <button hx-post="{% url 'toggle_save_job' saved.job.id %}"
+                                                hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'
+                                                hx-target="closest div.group" hx-swap="delete swap:0.5s"
+                                                class="text-slate-600 hover:text-red-400 transition-all opacity-0 group-hover:opacity-100">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                      d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                                            </svg>
+                                        </button>
+                                    </div>
+                                {% endfor %}
                             {% else %}
-                                <div class="flex flex-col gap-2">
-                                    <button data-modal-target="pricing-modal" data-modal-toggle="pricing-modal" class="w-full px-8 py-3 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-xl shadow-lg shadow-indigo-600/20 transition-all">
-                                        Upgrade Now
-                                    </button>
-                                </div>
+                                <p class="text-center text-slate-500 text-sm py-10">No saved jobs yet.</p>
                             {% endif %}
                         </div>
                     </div>
                 </div>
             </div>
-
-            <div class="lg:col-span-1">
-                <div class="bg-slate-900/80 border border-white/10 rounded-3xl p-6 shadow-2xl backdrop-blur-md sticky top-28">
-                    <div class="flex items-center justify-between mb-6 pb-4 border-b border-white/5">
-                        <h2 class="text-lg font-bold text-white flex items-center gap-2">
-                            <svg class="w-5 h-5 text-yellow-400" fill="currentColor" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
-                            Saved Jobs
-                        </h2>
-                    </div>
-
-                    <div class="space-y-3 max-h-[500px] overflow-y-auto custom-scrollbar pr-2">
-                        {% if saved_jobs %}
-                            {% for saved in saved_jobs %}
-                                <div class="group relative bg-white/[0.03] hover:bg-white/[0.08] border border-white/5 p-4 rounded-xl flex items-start justify-between transition-all gap-3 animate-fade-in-up">
-                                    <div class="min-w-0">
-                                        <a href="{{ saved.job.url }}" target="_blank" class="text-sm font-bold text-white hover:text-indigo-400 block truncate transition-colors">{{ saved.job.title }}</a>
-                                        <p class="text-xs text-slate-500 truncate">{{ saved.job.company }}</p>
-                                    </div>
-                                    <button hx-post="{% url 'toggle_save_job' saved.job.id %}" hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}' hx-target="closest div.group" hx-swap="delete swap:0.5s" class="text-slate-600 hover:text-red-400 transition-all opacity-0 group-hover:opacity-100">
-                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
-                                    </button>
-                                </div>
-                            {% endfor %}
-                        {% else %}
-                            <p class="text-center text-slate-500 text-sm py-10">No saved jobs yet.</p>
-                        {% endif %}
-                    </div>
-                </div>
-            </div>
         </div>
     </div>
-</div>
 
-<script>
-    function copyToClipboard(prefix) {
-        navigator.clipboard.writeText(prefix + "...");
-        const btn = document.getElementById('copyBtn');
-        const text = document.getElementById('copyText');
-        text.innerText = "Copied!";
-        btn.classList.add('text-green-400');
-        setTimeout(() => {
-            text.innerText = "Copy";
-            btn.classList.remove('text-green-400');
-        }, 2000);
-    }
-</script>
+    <script>
+        function copyToClipboard(text, isFullKey) {
+            // If it's the full key, copy it directly.
+            // If it's the prefix (old logic), add dots (though we hid the button now).
+            const contentToCopy = isFullKey ? text : text + "...";
+
+            navigator.clipboard.writeText(contentToCopy);
+
+            const btn = document.getElementById('copyBtn');
+            const textSpan = document.getElementById('copyText');
+
+            const originalText = textSpan.innerText;
+            textSpan.innerText = "Copied!";
+
+            // Visual feedback
+            if (isFullKey) {
+                btn.classList.add('bg-white', 'text-indigo-600');
+                btn.classList.remove('bg-green-500', 'text-slate-900');
+            }
+
+            setTimeout(() => {
+                textSpan.innerText = originalText;
+                if (isFullKey) {
+                    btn.classList.remove('bg-white', 'text-indigo-600');
+                    btn.classList.add('bg-green-500', 'text-slate-900');
+                }
+            }, 2000);
+        }
+    </script>
 {% endblock %}

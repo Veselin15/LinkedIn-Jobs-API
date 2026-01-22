@@ -31,7 +31,8 @@ if DEBUG:
     ALLOWED_HOSTS = ["*"]
 else:
     ALLOWED_HOSTS = os.environ.get("ALLOWED_HOSTS", "techjobsdata.com").split(",")
-SITE_URL = 'https://techjobsdata.com'
+# Use the environment variable if present, otherwise default to production
+SITE_URL = os.environ.get('SITE_URL', 'https://techjobsdata.com')
 # Application definition
 if DEBUG:
     CSRF_TRUSTED_ORIGINS = [
