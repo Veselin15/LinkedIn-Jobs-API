@@ -117,24 +117,14 @@ def dashboard(request):
     """
     The Money Page. Users manage their subscription and keys here.
     """
-    # 1. Get Subscription Status
-    sub = getattr(request.user, 'subscription', None)
-    plan_type = sub.plan_type if sub else 'free'
-    is_premium = plan_type in ['pro', 'business']
-
-    # 2. Get Existing Key
+    # 1. Get API Key info (using user ID for consistent naming)
     api_key = APIKey.objects.filter(name=request.user.email).first()
 
-    # 3. Check for manually regenerated key (from the 'Regenerate' button)
-    new_api_key = request.session.pop('new_api_key', None)
+    # 2. Mock "Premium" status (In reality, check a 'Subscription' model)
+    # For now, if they have an API key, we treat them as "Premium/Developer"
+    is_premium = api_key is not None
 
-    # 4. AUTO-GENERATE LOGIC (The Fix)
-    # If user is Premium but has NO key, generate one automatically right now.
-    if is_premium and not api_key:
-        api_key, key_string = APIKey.objects.create_key(name=request.user.email)
-        new_api_key = key_string  # Set this so the template displays it immediately
-
-    # 5. Get Saved Jobs
+    # 3. Get Saved Jobs
     saved_jobs = SavedJob.objects.filter(user=request.user).select_related('job').order_by('-created_at')
 
     context = {
@@ -143,7 +133,6 @@ def dashboard(request):
         'key_prefix': api_key.prefix if api_key else None,
         'is_premium': is_premium,
         'saved_jobs': saved_jobs,
-        'new_api_key': new_api_key, # Passed to template
     }
     return render(request, 'core/dashboard.html', context)
 
@@ -154,16 +143,16 @@ def regenerate_api_key(request):
     """
     Allows a user to revoke their old key and get a new one.
     """
+    # Delete old key
     APIKey.objects.filter(name=request.user.email).delete()
+
     api_key, key_string = APIKey.objects.create_key(name=request.user.email)
 
-    # --- NEW LOGIC START ---
-    # Store the full key in the session temporarily
-    request.session['new_api_key'] = key_string
-    messages.success(request, "New API Key generated! It is shown in the box below.")
-    # --- NEW LOGIC END ---
-
+    # Using Django Messages to show the key ONCE
+    messages.success(request, f"New API Key generated! Save it now: {key_string}")
     return redirect('dashboard')
+
+
 # --- 5. Interactive Features (HTMX) ---
 
 @login_required
