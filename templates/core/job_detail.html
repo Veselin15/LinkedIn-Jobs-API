@@ -1,24 +1,64 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<div class="max-w-4xl mx-auto py-20 px-4">
-    <div class="bg-slate-900 border border-white/10 rounded-2xl p-8 shadow-2xl">
-        <h1 class="text-3xl font-bold text-white mb-2">{{ job.title }}</h1>
-        <p class="text-xl text-indigo-400 mb-6">{{ job.company }} &bull; {{ job.location }}</p>
-        
-        <div class="prose prose-invert max-w-none text-slate-300">
-            <p><strong>Posted:</strong> {{ job.posted_at|date:"M d, Y" }}</p>
-            <p><strong>Salary:</strong> {{ job.salary|default:"Not specified" }}</p>
-            
-            <div class="mt-8 flex gap-4">
-                <a href="{{ job.url }}" target="_blank" class="px-6 py-3 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-xl transition-all">
-                    Apply Now 🚀
-                </a>
-                <a href="{% url 'job_list' %}" class="px-6 py-3 border border-slate-700 text-slate-300 hover:bg-slate-800 rounded-xl transition-all">
-                    Back to Jobs
-                </a>
+    <div class="max-w-4xl mx-auto py-20 px-4">
+        <div class="bg-slate-900 border border-white/10 rounded-2xl p-8 shadow-2xl">
+            <h1 class="text-3xl font-bold text-white mb-2">{{ job.title }}</h1>
+            <p class="text-xl text-indigo-400 mb-6">{{ job.company }} &bull; {{ job.location }}</p>
+
+            <div class="prose prose-invert max-w-none text-slate-300">
+                <p><strong>Posted:</strong> {{ job.posted_at|date:"M d, Y" }}</p>
+                <p><strong>Salary:</strong> {{ job.salary|default:"Not specified" }}</p>
+
+                <div class="mt-8 flex gap-4">
+                    <a href="{{ job.url }}" target="_blank"
+                       class="px-6 py-3 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-xl transition-all">
+                        Apply Now 🚀
+                    </a>
+                    <a href="{% url 'job_list' %}"
+                       class="px-6 py-3 border border-slate-700 text-slate-300 hover:bg-slate-800 rounded-xl transition-all">
+                        Back to Jobs
+                    </a>
+                </div>
             </div>
         </div>
     </div>
-</div>
+    {% block extra_head %}
+        <script type="application/ld+json">
+            {
+              "@context": "https://schema.org/",
+              "@type": "JobPosting",
+              "title": "{{ job.title|escapejs }}",
+  "description": "{{ job.description|escapejs }}",
+  "identifier": {
+    "@type": "PropertyValue",
+    "name": "{{ job.company|escapejs }}",
+    "value": "{{ job.id }}"
+  },
+  "datePosted": "{{ job.posted_at|date:'Y-m-d' }}",
+  "validThrough": "{{ job.posted_at|date:'Y-m-d' }}",
+  "hiringOrganization": {
+    "@type": "Organization",
+    "name": "{{ job.company|escapejs }}"
+  },
+  "jobLocation": {
+    "@type": "Place",
+    "address": {
+      "@type": "PostalAddress",
+      "addressLocality": "{{ job.location|escapejs }}",
+      "addressCountry": "Remote"
+    }
+  },
+  "baseSalary": {
+    "@type": "MonetaryAmount",
+    "currency": "USD",
+    "value": {
+      "@type": "QuantitativeValue",
+      "value": "{{ job.salary_max|default:0 }}",
+      "unitText": "YEAR"
+    }
+  }
+}
+        </script>
+    {% endblock %}
 {% endblock %}

@@ -1,0 +1,9 @@
+User-agent: *
+Allow: /
+
+# Block the dashboard/admin to save crawler budget
+Disallow: /dashboard/
+Disallow: /admin/
+Disallow: /api/
+
+Sitemap: https://techjobsdata.com/sitemap.xml
