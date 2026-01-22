@@ -117,14 +117,25 @@ def dashboard(request):
     """
     The Money Page. Users manage their subscription and keys here.
     """
-    api_key = APIKey.objects.filter(name=request.user.email).first()
-    is_premium = api_key is not None
-    saved_jobs = SavedJob.objects.filter(user=request.user).select_related('job').order_by('-created_at')
+    # 1. Get Subscription Status
+    sub = getattr(request.user, 'subscription', None)
+    plan_type = sub.plan_type if sub else 'free'
+    is_premium = plan_type in ['pro', 'business']
 
-    # --- NEW LOGIC START ---
-    # Check if a new key was just generated (pop it so it shows only once)
+    # 2. Get Existing Key
+    api_key = APIKey.objects.filter(name=request.user.email).first()
+
+    # 3. Check for manually regenerated key (from the 'Regenerate' button)
     new_api_key = request.session.pop('new_api_key', None)
-    # --- NEW LOGIC END ---
+
+    # 4. AUTO-GENERATE LOGIC (The Fix)
+    # If user is Premium but has NO key, generate one automatically right now.
+    if is_premium and not api_key:
+        api_key, key_string = APIKey.objects.create_key(name=request.user.email)
+        new_api_key = key_string  # Set this so the template displays it immediately
+
+    # 5. Get Saved Jobs
+    saved_jobs = SavedJob.objects.filter(user=request.user).select_related('job').order_by('-created_at')
 
     context = {
         'api_key': api_key,
@@ -132,7 +143,7 @@ def dashboard(request):
         'key_prefix': api_key.prefix if api_key else None,
         'is_premium': is_premium,
         'saved_jobs': saved_jobs,
-        'new_api_key': new_api_key, # <--- Add this to context
+        'new_api_key': new_api_key, # Passed to template
     }
     return render(request, 'core/dashboard.html', context)
 
