@@ -7,47 +7,44 @@ User = get_user_model()
 
 
 class FreeTierThrottle(SimpleRateThrottle):
-    """
-    Limits:
-    1. Scripts/Postman -> 20/day (Upgraded from 10)
-    2. Web Browsers -> Unlimited (Bypass for HTMX/HTML)
-    """
     scope = 'free_tier'
-    rate = '20/day'  # <--- UPGRADED LIMIT
-
-    def allow_request(self, request, view):
-        # --- BYPASS FOR BROWSERS ---
-        # If the user is asking for HTML (Web Page) or using HTMX, let them in!
-        if request.accepts('text/html') or request.headers.get('HX-Request') == 'true':
-            return True  # Skip throttling completely
-
-        # If the user is an Admin, also skip
-        if request.user.is_staff:
-            return True
-
-        # Otherwise, run the standard check
-        return super().allow_request(request, view)
+    rate = '3/min'
 
     def get_cache_key(self, request, view):
-        # 1. Check for ANY valid API Key
-        # If they have a key, we return None here so this throttle is skipped.
-        # The Pro/Business throttles will pick them up instead.
+        # 1. Check if it's a Browser/HTMX request (Allow)
+        if request.accepts('text/html') or request.headers.get('HX-Request') == 'true':
+            return None
+
+        ident = self.get_ident(request)  # Default to IP address
+
+        # 2. Check for API Key
         auth_header = request.META.get("HTTP_AUTHORIZATION")
         if auth_header and auth_header.startswith("Api-Key "):
             try:
                 key_value = auth_header.split()[1]
-                if APIKey.objects.get_from_key(key_value):
-                    return None
+                api_key = APIKey.objects.get_from_key(key_value)
+                if api_key:
+                    # Get the user and their plan
+                    email = api_key.name
+                    user = User.objects.filter(email=email).first()
+                    sub = getattr(user, 'subscription', None)
+
+                    # If they are Pro or Business, RETURN NONE to skip this throttle
+                    # (The Pro/Business throttles will handle them)
+                    if sub and sub.plan_type in ['pro', 'business']:
+                        return None
+
+                    # If we are here, they are Authenticated but Free.
+                    # Use their API Key ID as the throttle identifier instead of IP.
+                    ident = api_key.id
             except:
                 pass
 
-        # 2. No Key? Throttle by IP Address (The Free User)
-        ident = self.get_ident(request)
+        # 3. Apply the 20/day limit to the identifier (IP or Free Key ID)
         return self.cache_format % {
             'scope': self.scope,
             'ident': ident
         }
-
 
 class ProTierThrottle(SimpleRateThrottle):
     """
@@ -55,7 +52,7 @@ class ProTierThrottle(SimpleRateThrottle):
     Applies ONLY if the user's Subscription is 'pro'
     """
     scope = 'pro_tier'
-    rate = '1000/day'
+    rate = '5/min'
 
     def get_cache_key(self, request, view):
         return self.check_plan_limit(request, 'pro')
@@ -94,7 +91,7 @@ class BusinessTierThrottle(SimpleRateThrottle):
     Applies ONLY if the user's Subscription is 'business'
     """
     scope = 'business_tier'
-    rate = '10000/day'
+    rate = '10/min'
 
     def get_cache_key(self, request, view):
         # Reuse logic but look for 'business' plan

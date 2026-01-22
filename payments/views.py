@@ -102,13 +102,13 @@ class StripeWebhookView(View):
                             'stripe_customer_id': stripe_customer_id
                         }
                     )
-                    # Refresh API Key
-                    APIKey.objects.filter(name=customer_email).delete()
-                    _, key_string = APIKey.objects.create_key(name=customer_email)
+                    # # Refresh API Key
+                    # APIKey.objects.filter(name=customer_email).delete()
+                    # _, key_string = APIKey.objects.create_key(name=customer_email)
 
                     send_mail(
                         subject="Welcome to TechJobsData!",
-                        message=f"Your {plan_type.upper()} plan is active.\nAPI Key: {key_string}",
+                        message=f"Your {plan_type.upper()} plan is active. Visit your dashboard to get your API Key.",
                         from_email=settings.DEFAULT_FROM_EMAIL,
                         recipient_list=[customer_email],
                         fail_silently=True,
