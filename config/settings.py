@@ -15,12 +15,11 @@ from celery import Celery
 from celery.schedules import crontab
 from django.core.exceptions import ImproperlyConfigured
 
-
-
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 import os
+
 # Use the environment variable if available, otherwise use a default for dev
 SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', 'django-insecure-dev-key-for-localhost-12345')
 
@@ -36,10 +35,10 @@ SITE_URL = os.environ.get('SITE_URL', 'https://techjobsdata.com')
 # Application definition
 if DEBUG:
     CSRF_TRUSTED_ORIGINS = [
-        "http://127.0.0.1:8000", 
+        "http://127.0.0.1:8000",
         "http://localhost:8000",
         "https://techjobsdata.com",
-	    "https://www.techjobsdata.com"
+        "https://www.techjobsdata.com"
     ]
 else:
     CSRF_TRUSTED_ORIGINS = os.environ.get("CSRF_TRUSTED_ORIGINS", "https://techjobsdata.com").split(",")
@@ -112,15 +111,15 @@ WSGI_APPLICATION = 'config.wsgi.application'
 # https://docs.djangoproject.com/en/6.0/ref/settings/#databases
 
 DATABASES = {
-   'default': {
-	   'ENGINE': 'django.db.backends.postgresql',
-           'NAME': os.environ.get('POSTGRES_DB', 'remotejobs'),
-           'USER': os.environ.get('POSTGRES_USER', 'user'),
-           'PASSWORD': os.environ.get('POSTGRES_PASSWORD', 'password'),
-           'HOST': 'db',
-           'PORT': 5432,
-        }
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': os.environ.get('POSTGRES_DB', 'remotejobs'),
+        'USER': os.environ.get('POSTGRES_USER', 'user'),
+        'PASSWORD': os.environ.get('POSTGRES_PASSWORD', 'password'),
+        'HOST': 'db',
+        'PORT': 5432,
     }
+}
 
 # Password validation
 # https://docs.djangoproject.com/en/6.0/ref/settings/#auth-password-validators
@@ -178,14 +177,16 @@ REST_FRAMEWORK = {
 
     # 2. Activate the new 3-Tier Throttling System
     'DEFAULT_THROTTLE_CLASSES': [
-        'jobs.throttles.FreeTierThrottle',      # 20/day
-        'jobs.throttles.ProTierThrottle',       # 1,000/day
+        'jobs.throttles.FreeTierThrottle',  # 20/day
+        'jobs.throttles.ProTierThrottle',  # 1,000/day
         'jobs.throttles.BusinessTierThrottle',  # 10,000/day
     ],
 
     'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
-    'PAGE_SIZE': 10,
+    'PAGE_SIZE': 20,  # Increase default slightly (optional)
+    'PAGE_SIZE_QUERY_PARAM': 'page_size',  # Allow users to control it
+    'MAX_PAGE_SIZE': 50,
 }
 
 SPECTACULAR_SETTINGS = {
