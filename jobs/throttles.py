@@ -1,10 +1,10 @@
+# jobs/throttles.py
+
 from rest_framework.throttling import SimpleRateThrottle
 from rest_framework_api_key.models import APIKey
 from django.contrib.auth import get_user_model
-from payments.models import UserSubscription
 
 User = get_user_model()
-
 
 class FreeTierThrottle(SimpleRateThrottle):
     scope = 'free_tier'
@@ -35,12 +35,15 @@ class FreeTierThrottle(SimpleRateThrottle):
                         return None
 
                     # If we are here, they are Authenticated but Free.
-                    # Use their API Key ID as the throttle identifier instead of IP.
-                    ident = api_key.id
+                    # --- CHANGE: Track by User ID, not Key ID ---
+                    if user:
+                        ident = user.id
+                    else:
+                        ident = api_key.id
             except:
                 pass
 
-        # 3. Apply the 20/day limit to the identifier (IP or Free Key ID)
+        # 3. Apply the 20/day limit to the identifier (IP or User ID)
         return self.cache_format % {
             'scope': self.scope,
             'ident': ident
@@ -76,9 +79,10 @@ class ProTierThrottle(SimpleRateThrottle):
                     sub = getattr(user, 'subscription', None)
                     # If they match the plan, apply this throttle
                     if sub and sub.plan_type == required_plan:
+                        # --- CHANGE: Track by User ID ---
                         return self.cache_format % {
                             'scope': self.scope,
-                            'ident': api_key.id
+                            'ident': user.id
                         }
         except:
             pass
@@ -110,9 +114,10 @@ class BusinessTierThrottle(SimpleRateThrottle):
                 if user:
                     sub = getattr(user, 'subscription', None)
                     if sub and sub.plan_type == 'business':
+                        # --- CHANGE: Track by User ID ---
                         return self.cache_format % {
                             'scope': self.scope,
-                            'ident': api_key.id
+                            'ident': user.id
                         }
         except:
             pass
