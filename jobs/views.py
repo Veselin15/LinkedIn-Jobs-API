@@ -5,7 +5,7 @@ from rest_framework.renderers import JSONRenderer, TemplateHTMLRenderer
 from django.core.cache import cache
 from django_filters.rest_framework import DjangoFilterBackend
 from drf_spectacular.utils import extend_schema
-
+from django.contrib.postgres.search import SearchVector, SearchQuery, SearchRank
 from .models import Job
 from .serializers import JobSerializer
 from .tasks import run_scrapers
@@ -16,9 +16,7 @@ from .filters import JobFilter
 
 # --- 1. The Job List API ---
 class JobListAPI(generics.ListAPIView):
-    queryset = Job.objects.all().order_by('-posted_at')
     serializer_class = JobSerializer
-
     # Filter Backend settings
     filter_backends = [DjangoFilterBackend]
     filterset_class = JobFilter
@@ -29,6 +27,35 @@ class JobListAPI(generics.ListAPIView):
     # --- UPDATED THROTTLES HERE ---
     # We list all of them; the code inside them determines which one applies
     throttle_classes = [BusinessTierThrottle, ProTierThrottle, FreeTierThrottle]
+
+    def get_queryset(self):
+        """
+        Uses Postgres Full-Text Search if the 'search' parameter is present.
+        Otherwise, returns the standard list.
+        """
+        # Start with all jobs
+        queryset = Job.objects.all().order_by('-posted_at')
+
+        # Get the 'search' parameter from the URL (e.g., ?search=python developer)
+        search_term = self.request.query_params.get('search', None)
+
+        if search_term:
+            # 1. Define where to search (Vector)
+            # Search in the title (weight A - most important) and company/skills (B)
+            vector = SearchVector('title', weight='A') + \
+                     SearchVector('company', weight='B') + \
+                     SearchVector('skills', weight='B')
+
+            # 2. Process the query (Query)
+            # SearchQuery automatically removes stop words (the, a, in) and performs stemming
+            query = SearchQuery(search_term)
+
+            # 3. Filter and sort by relevance (Rank)
+            queryset = queryset.annotate(
+                rank=SearchRank(vector, query)
+            ).filter(rank__gte=0.1).order_by('-rank', '-posted_at')
+
+        return queryset
 
     def list(self, request, *args, **kwargs):
         response = super().list(request, *args, **kwargs)
