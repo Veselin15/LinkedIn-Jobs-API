@@ -31,7 +31,6 @@ Built with **Django**, **Scrapy**, and **Celery**, it features a sophisticated s
 
 ---
 
-
 ## ⚡ Getting Started
 
 ### 1. Prerequisites
